@@ -107,10 +107,10 @@ const Dashboard = () => {
             className="flex items-center justify-center space-x-2 mb-4"
           >
             <Icon
-              name="emerald"
+              name="diamond"
               type="prize"
               size="lg"
-              className="text-yellow-400"
+              className="text-purple-400"
             />
             <span className="text-xl font-bold text-purple-700">
               {user.stars} Stars
@@ -121,9 +121,14 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full px-6 py-2 inline-flex items-center space-x-2"
+            className="bg-gradient-to-r from-purple-400 to-pink-400 rounded-full px-6 py-2 inline-flex items-center space-x-2"
           >
-            <Icon name="ruby" type="prize" size="lg" className="text-white" />
+            <Icon
+              name="diamond"
+              type="prize"
+              size="lg"
+              className="text-white"
+            />
             <span className="text-white font-bold">
               {user.streak}-day Kindness Streak!
             </span>
@@ -256,41 +261,6 @@ const Dashboard = () => {
           </motion.div>
         </div>
       </section>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-t border-gray-200">
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="flex justify-around py-4">
-            <Link to="/dashboard" className="flex flex-col items-center">
-              <Icon
-                name="star"
-                type="ui"
-                size="lg"
-                className="text-purple-600"
-              />
-              <span className="text-sm text-purple-600">Home</span>
-            </Link>
-            <Link to="/profile" className="flex flex-col items-center">
-              <Icon
-                name={user.avatar}
-                type="avatar"
-                size="lg"
-                className="text-gray-600"
-              />
-              <span className="text-sm text-gray-600">Me</span>
-            </Link>
-            <Link to="/leaderboard" className="flex flex-col items-center">
-              <Icon
-                name="trophy-0"
-                type="badge"
-                size="lg"
-                className="text-gray-600"
-              />
-              <span className="text-sm text-gray-600">Top Stars</span>
-            </Link>
-          </div>
-        </div>
-      </nav>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Layout from "./components/Layout";
@@ -13,7 +13,6 @@ import Profile from "./pages/Profile";
 import Leaderboard from "./pages/Leaderboard";
 
 const App = () => {
-  const location = useLocation();
   const { isLoading } = useAuth0();
 
   if (isLoading) {
@@ -24,7 +23,7 @@ const App = () => {
     <ErrorBoundary>
       <Layout>
         <Suspense fallback={<Loading fullScreen />}>
-          <Routes location={location}>
+          <Routes>
             <Route path="/" element={<Home />} />
             <Route
               path="/dashboard"
@@ -44,6 +43,14 @@ const App = () => {
             />
             <Route
               path="/deed"
+              element={
+                <ProtectedRoute>
+                  <Navigate to="/spin" replace />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/deed/:id"
               element={
                 <ProtectedRoute>
                   <Deed />

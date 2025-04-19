@@ -27,6 +27,10 @@ const facts = [
 const Deed = () => {
   const navigate = useNavigate();
   const { deedId } = useParams();
+
+  // Debug logging
+  console.log("Deed component rendered with deedId:", deedId);
+
   const [submission, setSubmission] = useState<{
     content: string;
     type: "text" | "image" | "audio";
@@ -43,6 +47,11 @@ const Deed = () => {
     width: window.innerWidth,
     height: window.innerHeight,
   });
+
+  // Debug logging for initial render
+  useEffect(() => {
+    console.log("Deed component mounted with deedId:", deedId);
+  }, [deedId]);
 
   // Handle window resize for confetti
   useEffect(() => {
@@ -95,8 +104,16 @@ const Deed = () => {
     }
   };
 
+  // Debug logging for render
+  console.log("Rendering Deed component with mockDeed:", mockDeed);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-100 via-blue-100 to-purple-100 p-4">
+      {/* Debug info - will be removed in production */}
+      <div className="fixed top-0 left-0 bg-black text-white p-2 z-50">
+        Debug: deedId = {deedId}
+      </div>
+
       {/* Confetti */}
       <AnimatePresence>
         {showConfetti && (

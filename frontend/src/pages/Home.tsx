@@ -73,7 +73,12 @@ const Home = () => {
               delay: Math.random() * 2,
             }}
           >
-            <Icon name="star" type="ui" size="md" className="text-yellow-400" />
+            <Icon
+              name="diamond"
+              type="prize"
+              size="md"
+              className="text-purple-400"
+            />
           </motion.div>
         ))}
       </div>
@@ -91,13 +96,18 @@ const Home = () => {
             transition={{ type: "spring", stiffness: 200 }}
             className="mb-6"
           >
-            <Icon name="star" type="ui" size="xl" className="text-yellow-400" />
+            <Icon
+              name="diamond"
+              type="prize"
+              size="xl"
+              className="text-purple-400"
+            />
           </motion.div>
           <h1 className="text-5xl font-bold text-purple-800 mb-4">
             Welcome to Kindness Quest!
           </h1>
           <p className="text-xl text-gray-700 mb-8">
-            Where every act of kindness makes you a superhero! 🦸‍♀️
+            Where every act of kindness makes you a superhero! ��‍♀️
           </p>
           <div className="flex justify-center gap-4">
             {!isAuthenticated ? (

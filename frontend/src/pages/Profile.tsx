@@ -12,7 +12,7 @@ import {
 const mockUser = {
   id: "user-123",
   name: "Maya the Brave",
-  avatarUrl: "👧",
+  avatarUrl: "girl-0",
   streak: 6,
   totalStars: 43,
 };
@@ -32,7 +32,7 @@ const mockBadges = {
       id: "kindness-1",
       name: "Kindness Cadet",
       category: "kindness",
-      icon: "heart" as BadgeIconName,
+      icon: "trophy-0" as BadgeIconName,
       description: "Completed 5 kindness missions",
       color: "bg-pink-400",
     },
@@ -40,7 +40,7 @@ const mockBadges = {
       id: "environment-1",
       name: "Earth Explorer",
       category: "environment",
-      icon: "leaf" as BadgeIconName,
+      icon: "trophy-1" as BadgeIconName,
       description: "Completed 3 environment missions",
       color: "bg-green-400",
     },
@@ -50,7 +50,7 @@ const mockBadges = {
       id: "kindness-2",
       name: "Kindness Captain",
       category: "kindness",
-      icon: "heart" as BadgeIconName,
+      icon: "trophy-2" as BadgeIconName,
       description: "Complete 10 kindness missions",
       color: "bg-pink-400",
     },
@@ -58,7 +58,7 @@ const mockBadges = {
       id: "justice-1",
       name: "Justice Warrior",
       category: "justice",
-      icon: "scale" as BadgeIconName,
+      icon: "trophy-3" as BadgeIconName,
       description: "Complete 5 justice missions",
       color: "bg-purple-400",
     },
@@ -73,7 +73,7 @@ const mockDeedHistory = [
     date: "2 days ago",
     type: "text" as const,
     category: "kindness",
-    icon: "heart" as BadgeIconName,
+    icon: "medal-0" as BadgeIconName,
   },
   {
     id: "deed-2",
@@ -82,7 +82,7 @@ const mockDeedHistory = [
     date: "3 days ago",
     type: "photo" as const,
     category: "environment",
-    icon: "leaf" as BadgeIconName,
+    icon: "medal-1" as BadgeIconName,
   },
 ];
 
@@ -129,9 +129,53 @@ const Profile = () => {
     setIsEditingName(false);
   };
 
+  // Floating diamonds effect
+  const FloatingDiamonds = () => {
+    const diamonds = Array.from({ length: 5 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      delay: Math.random() * 2,
+      duration: 2 + Math.random() * 2,
+    }));
+
+    return (
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {diamonds.map((diamond) => (
+          <motion.div
+            key={diamond.id}
+            className="absolute w-8 h-8"
+            style={{
+              left: `${diamond.x}%`,
+              top: `${diamond.y}%`,
+            }}
+            animate={{
+              y: [0, -20, 0],
+              opacity: [0.3, 0.8, 0.3],
+              rotate: [0, 180, 360],
+            }}
+            transition={{
+              duration: diamond.duration,
+              repeat: Infinity,
+              delay: diamond.delay,
+              ease: "easeInOut",
+            }}
+          >
+            <img
+              src="/src/assets/icons/diamond.svg"
+              alt="diamond"
+              className="w-full h-full"
+            />
+          </motion.div>
+        ))}
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 py-8 px-4">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 py-8 px-4 relative overflow-hidden">
+      <FloatingDiamonds />
+      <div className="max-w-4xl mx-auto space-y-8 relative z-10">
         {/* Profile Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -145,7 +189,7 @@ const Profile = () => {
               className="w-40 h-40 rounded-full bg-white p-2 border-4 border-purple-400 shadow-xl relative overflow-hidden"
             >
               <Icon
-                name={selectedAvatar}
+                name={mockUser.avatarUrl as AvatarIconName}
                 type="avatar"
                 size="xl"
                 className="w-full h-full"
@@ -205,7 +249,12 @@ const Profile = () => {
                 Your Kindness Streak
               </h2>
               <p className="text-lg text-purple-600">
-                {streak} days of spreading joy! 🌟
+                {streak} days of spreading joy!
+                <img
+                  src="/src/assets/icons/diamond.svg"
+                  alt="diamond"
+                  className="w-6 h-6 inline-block ml-2"
+                />
               </p>
             </div>
             <motion.div
@@ -213,7 +262,11 @@ const Profile = () => {
               transition={{ duration: 2, repeat: Infinity }}
               className="text-5xl"
             >
-              <Icon name="star" type="prize" size="xl" />
+              <img
+                src="/src/assets/icons/diamond.svg"
+                alt="diamond"
+                className="w-12 h-12"
+              />
             </motion.div>
           </div>
           <motion.div
@@ -287,11 +340,14 @@ const Profile = () => {
                     className="ml-auto"
                     whileHover={{ scale: 1.1, rotate: 10 }}
                   >
-                    <Icon
-                      name={mission.theme === "earth" ? "emerald" : "ruby"}
-                      type="prize"
-                      size="md"
-                      className="animate-shine"
+                    <img
+                      src={
+                        mission.theme === "earth"
+                          ? "/src/assets/icons/emerald.svg"
+                          : "/src/assets/icons/ruby.svg"
+                      }
+                      alt="prize"
+                      className="w-8 h-8 animate-shine"
                     />
                   </motion.div>
                 </div>
@@ -382,7 +438,12 @@ const Profile = () => {
                 className={`${badge.color} rounded-2xl p-4 text-center cursor-pointer`}
               >
                 <div className="text-4xl mb-2">
-                  <Icon name={badge.icon} type="badge" size="xl" />
+                  <Icon
+                    name={badge.icon}
+                    type="badge"
+                    size="xl"
+                    className="mx-auto"
+                  />
                 </div>
                 <h3 className="font-bold text-white">{badge.name}</h3>
               </motion.div>
@@ -393,10 +454,15 @@ const Profile = () => {
                 className="bg-gray-200 rounded-2xl p-4 text-center relative"
               >
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-4xl">🔒</span>
+                  <Icon name="default" type="badge" size="md" />
                 </div>
                 <div className="text-4xl mb-2 opacity-20">
-                  <Icon name={badge.icon} type="badge" size="xl" />
+                  <Icon
+                    name={badge.icon}
+                    type="badge"
+                    size="xl"
+                    className="mx-auto"
+                  />
                 </div>
                 <h3 className="font-bold text-gray-400">{badge.name}</h3>
               </motion.div>
@@ -429,7 +495,11 @@ const Profile = () => {
                   <p className="text-sm text-gray-500">{deed.date}</p>
                 </div>
                 <span className="text-2xl">
-                  {deed.status === "completed" ? "✅" : "❌"}
+                  {deed.status === "completed" ? (
+                    <Icon name="thumbs-up" type="badge" size="md" />
+                  ) : (
+                    <Icon name="default" type="badge" size="md" />
+                  )}
                 </span>
               </motion.div>
             ))}
@@ -443,7 +513,11 @@ const Profile = () => {
           onClick={() => setShowParentSettings(true)}
           className="fixed bottom-4 right-4 bg-purple-600 text-white p-4 rounded-full shadow-lg"
         >
-          🔒 Parent
+          <img
+            src="/src/assets/icons/lock.svg"
+            alt="parent"
+            className="w-6 h-6"
+          />
         </motion.button>
 
         {/* Parent Settings Modal */}
@@ -476,7 +550,13 @@ const Profile = () => {
                   <div className="p-4 bg-purple-50 rounded-xl">
                     <p className="text-purple-800">
                       Hi Parent! {mockUser.name}'s doing great. Her favorite
-                      category is 💞 Kindness!
+                      category is{" "}
+                      <img
+                        src="/src/assets/icons/heart.svg"
+                        alt="kindness"
+                        className="w-4 h-4 inline-block"
+                      />{" "}
+                      Kindness!
                     </p>
                   </div>
                   <button className="w-full bg-purple-600 text-white py-2 rounded-full hover:bg-purple-700">
@@ -487,7 +567,11 @@ const Profile = () => {
                   onClick={() => setShowParentSettings(false)}
                   className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
                 >
-                  ✕
+                  <img
+                    src="/src/assets/icons/cross.svg"
+                    alt="close"
+                    className="w-6 h-6"
+                  />
                 </button>
               </motion.div>
             </motion.div>
@@ -509,7 +593,12 @@ const Profile = () => {
                 className={`${selectedBadge.color} rounded-3xl p-8 max-w-md w-full text-center text-white`}
               >
                 <div className="text-6xl mb-4">
-                  <Icon name={selectedBadge.icon} type="badge" size="xl" />
+                  <Icon
+                    name={selectedBadge.icon}
+                    type="badge"
+                    size="xl"
+                    className="mx-auto"
+                  />
                 </div>
                 <h2 className="text-2xl font-bold mb-2">
                   {selectedBadge.name}
