@@ -1,0 +1,266 @@
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { Icon } from "../components/Icon";
+import SpinWheel from "../components/SpinWheel";
+import { BadgeIconName, PrizeIconName } from "../types/icon";
+
+// Single source of truth for categories and deeds
+const deedCategories = [
+  {
+    id: "kindness",
+    name: "Kindness",
+    icon: "heart" as BadgeIconName,
+    color: "#EC4899", // Color for wheel
+    bgColor: "bg-pink-400", // Tailwind class for result card
+    title: "Be a Kindness Champion!",
+    description: "Give someone a genuine compliment today",
+    deedId: "kindness-1",
+  },
+  {
+    id: "earth",
+    name: "Earth Hero",
+    icon: "leaf" as BadgeIconName,
+    color: "#10B981",
+    bgColor: "bg-green-400",
+    title: "Be a Planet Protector!",
+    description: "Turn off lights when leaving a room",
+    deedId: "env-1",
+  },
+  {
+    id: "inclusivity",
+    name: "Inclusivity",
+    icon: "users" as BadgeIconName,
+    color: "#3B82F6",
+    bgColor: "bg-indigo-400",
+    title: "Be an Inclusivity Champion!",
+    description: "Include someone new in your activities",
+    deedId: "inclusivity-1",
+  },
+  {
+    id: "learn",
+    name: "Learn & Share",
+    icon: "lightbulb" as BadgeIconName,
+    color: "#F59E0B",
+    bgColor: "bg-amber-400",
+    title: "Be a Knowledge Sharer!",
+    description: "Teach someone something new",
+    deedId: "learn-1",
+  },
+  {
+    id: "animals",
+    name: "Animal Love",
+    icon: "paw" as BadgeIconName,
+    color: "#8B5CF6",
+    bgColor: "bg-yellow-400",
+    title: "Be an Animal Friend!",
+    description: "Help feed a pet or bird today",
+    deedId: "animal-1",
+  },
+  {
+    id: "justice",
+    name: "Social Justice",
+    icon: "scale" as BadgeIconName,
+    color: "#EF4444",
+    bgColor: "bg-purple-400",
+    title: "Be a Justice Warrior!",
+    description: "Stand up for someone being treated unfairly",
+    deedId: "justice-1",
+  },
+  {
+    id: "women",
+    name: "Women Empowerment",
+    icon: "female" as BadgeIconName,
+    color: "#EC4899",
+    bgColor: "bg-rose-400",
+    title: "Be a Women's Advocate!",
+    description: "Support a woman-owned business",
+    deedId: "women-1",
+  },
+  {
+    id: "culture",
+    name: "Cultural Awareness",
+    icon: "book" as BadgeIconName,
+    color: "#F59E0B",
+    bgColor: "bg-blue-400",
+    title: "Be a Culture Explorer!",
+    description: "Learn about a new tradition or custom",
+    deedId: "culture-1",
+  },
+];
+
+// Mock data for quotes
+const quotes = [
+  "Every deed you do is a step to change the world!",
+  "Small acts of kindness create big waves of change!",
+  "You're making the world a better place, one deed at a time!",
+  "Your kindness is like a ripple that spreads far and wide!",
+];
+
+const Spin = () => {
+  const navigate = useNavigate();
+  const [hasSpunToday, setHasSpunToday] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [currentQuote, setCurrentQuote] = useState(quotes[0]);
+  const [spinResult, setSpinResult] = useState<
+    (typeof deedCategories)[0] | null
+  >(null);
+
+  // Rotate quotes every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentQuote((prev) => {
+        const currentIndex = quotes.indexOf(prev);
+        return quotes[(currentIndex + 1) % quotes.length];
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleSpinComplete = (categoryId: string) => {
+    const selectedDeed = deedCategories.find((deed) => deed.id === categoryId);
+    if (selectedDeed) {
+      setSpinResult(selectedDeed);
+      setShowResult(true);
+      setHasSpunToday(true);
+      // Store in localStorage
+      localStorage.setItem("lastSpinDate", new Date().toISOString());
+
+      // Scroll to result after a short delay to allow animation to start
+      setTimeout(() => {
+        const resultElement = document.getElementById("result-card");
+        if (resultElement) {
+          resultElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 100);
+    }
+  };
+
+  const handleAcceptDeed = (deedId: string) => {
+    navigate(`/deed/${deedId}`);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-blue-100 via-pink-100 to-purple-100 p-4">
+      {/* Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {[...Array(10)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [0, -20, 0],
+              rotate: [0, 360],
+            }}
+            transition={{
+              duration: 3 + Math.random() * 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: Math.random() * 2,
+            }}
+          >
+            <Icon
+              name="diamond"
+              type="prize"
+              size="md"
+              className="text-purple-400"
+            />
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="max-w-2xl mx-auto">
+        {/* Title */}
+        <motion.h1
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-4xl font-bold text-center text-purple-800 mb-8"
+        >
+          <div className="flex items-center justify-center space-x-2">
+            <Icon
+              name="diamond"
+              type="prize"
+              size="xl"
+              className="text-purple-600"
+            />
+            <span>Spin the Kindness Wheel!</span>
+            <Icon
+              name="diamond"
+              type="prize"
+              size="xl"
+              className="text-purple-600"
+            />
+          </div>
+        </motion.h1>
+
+        {/* Wheel Area */}
+        <div className="relative mb-8">
+          <SpinWheel
+            categories={deedCategories.map((cat) => ({
+              id: cat.id,
+              name: cat.name,
+              color: cat.color,
+            }))}
+            onSpinComplete={handleSpinComplete}
+          />
+        </div>
+
+        {/* Result Card */}
+        <AnimatePresence>
+          {showResult && spinResult && (
+            <motion.div
+              id="result-card"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className={`${spinResult.bgColor} rounded-3xl p-6 shadow-xl mb-8 relative z-20`}
+            >
+              <div className="flex items-center justify-center mb-4">
+                <Icon
+                  name={spinResult.icon}
+                  type="badge"
+                  size="xl"
+                  className="text-white"
+                />
+              </div>
+              <h2 className="text-2xl font-bold text-white text-center mb-2">
+                {spinResult.title}
+              </h2>
+              <div className="bg-white/20 rounded-full px-4 py-1 mb-4 mx-auto text-center w-fit">
+                <span className="text-white font-semibold">
+                  {spinResult.name} Hero
+                </span>
+              </div>
+              <p className="text-white text-lg text-center mb-6">
+                {spinResult.description}
+              </p>
+              <button
+                onClick={() => handleAcceptDeed(spinResult.deedId)}
+                className="w-full bg-white text-purple-800 font-bold py-3 rounded-full text-xl hover:scale-105 transition-transform"
+              >
+                Let's Do This! 🚀
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Encouragement Quote */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl"
+        >
+          <p className="text-purple-800 text-xl text-center font-semibold">
+            {currentQuote}
+          </p>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+export default Spin;
