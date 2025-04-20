@@ -18,8 +18,8 @@ const generateDeed = async (req, res) => {
     const { category } = req.body;
     if (!category) {
       return res.status(400).json({ error: 'Category is required' });
-    }
-    
+    } 
+       
     // Generate the deed using the service
     const generatedDeed = await deedService.generateDeed(category);
     

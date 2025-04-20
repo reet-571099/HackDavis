@@ -225,11 +225,11 @@ Don't include any other text outside the JSON object.`;
   }
 
   // Analyze audio with Gemini AI
-  async analyzeAudio(audioBase64, category) {
+  async analyzeAudio(audioBase64, { deed, category }) {
     try {
       console.log('Analyzing audio with Gemini AI...');
       
-      const prompt = this.createAudioPrompt(category);
+      const prompt = this.createAudioPrompt(deed, category);
       
       const result = await this.model.generateContent([
         prompt,
@@ -267,26 +267,20 @@ Don't include any other text outside the JSON object.`;
   }
 
   // Create a prompt for audio analysis
-  createAudioPrompt(category) {
-    return `Analyze this audio recording and determine if it matches the category "${category}".
-    
-    Categories and their meanings:
-    - helping: Describes someone helping or assisting another person
-    - environment: Describes environmental conservation or cleanup activities
-    - kindness: Describes acts of kindness, compassion, or positive social interaction
-    - sharing: Describes sharing of resources, knowledge, or time
-    
+  createAudioPrompt(deed, category) {
+    return `Analyze this audio recording and determine if it matches the deed: "${deed}" in the category "${category}".
+
     Requirements:
-    1. The audio MUST clearly describe an act matching the specified category
-    2. The description must be the main focus of the audio
-    3. The context must be appropriate for the category
+    1. The audio MUST describe the completion of the specific deed: "${deed}"
+    2. The description should be clear and specific about how the deed was completed
+    3. The context must be appropriate for the category: "${category}"
     
     Return ONLY a JSON object in this exact format, with no additional text or formatting:
     {
       "matches": boolean,
       "confidence": number between 0 and 1,
-      "explanation": "detailed explanation",
-      "transcript": "transcription of the audio"
+      "explanation": "detailed explanation of why it matches or doesn't match",
+      "transcript": "the transcribed text of the audio"
     }`;
   }
 }

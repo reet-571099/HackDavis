@@ -345,8 +345,11 @@ const saveVoiceEntry = async (req, res) => {
     // Convert audio to base64
     const base64Audio = file.buffer.toString('base64');
 
-    // Analyze audio with Gemini AI
-    const analysis = await geminiService.analyzeAudio(base64Audio, deed.category);
+    // Analyze audio with Gemini AI, passing both the deed content and category
+    const analysis = await geminiService.analyzeAudio(base64Audio, {
+      deed: deed.deed,  // The actual deed content
+      category: deed.category
+    });
 
     // Create entry in Firestore
     const entryId = uuidv4();
@@ -366,6 +369,7 @@ const saveVoiceEntry = async (req, res) => {
         confidence: analysis.confidence,
         explanation: analysis.explanation,
         transcript: analysis.transcript,
+        deed: deed.deed,  // Store the original deed
         category: deed.category,
         requiredCategory: deed.category
       }
@@ -373,17 +377,51 @@ const saveVoiceEntry = async (req, res) => {
 
     await entryRef.set(entryData);
 
-    res.status(201).json({
-      message: analysis.matches ? 'Voice entry uploaded and verified successfully' : 'Voice entry uploaded but does not match the deed category',
-      entryId,
-      verification: {
-        matches: analysis.matches,
-        confidence: analysis.confidence,
-        explanation: analysis.explanation,
-        transcript: analysis.transcript,
-        category: deed.category
-      }
-    });
+    // Update category counts based on verification
+    const categoryRef = db.collection('categoryStats').doc(deed.category);
+    const categoryDoc = await categoryRef.get();
+    
+    if (analysis.matches) {
+      // Increment true count
+      await categoryRef.set({
+        trueCount: (categoryDoc.exists ? (categoryDoc.data().trueCount || 0) : 0) + 1,
+        falseCount: categoryDoc.exists ? (categoryDoc.data().falseCount || 0) : 0
+      }, { merge: true });
+
+      res.status(201).json({
+        message: 'Great job! Your submission matches the deed perfectly!',
+        entryId,
+        verification: {
+          matches: true,
+          confidence: analysis.confidence,
+          explanation: analysis.explanation,
+          transcript: analysis.transcript,
+          deed: deed.deed,
+          category: deed.category
+        }
+      });
+    } else {
+      // Increment false count
+      await categoryRef.set({
+        trueCount: categoryDoc.exists ? (categoryDoc.data().trueCount || 0) : 0,
+        falseCount: (categoryDoc.exists ? (categoryDoc.data().falseCount || 0) : 0) + 1
+      }, { merge: true });
+
+      res.status(201).json({
+        message: 'Nice try! Your submission doesn\'t quite match the deed. Here\'s a suggestion: ' + 
+                'Try to focus more on the specific action mentioned in the deed. You can do it!',
+        entryId,
+        verification: {
+          matches: false,
+          confidence: analysis.confidence,
+          explanation: analysis.explanation,
+          transcript: analysis.transcript,
+          deed: deed.deed,
+          category: deed.category,
+          suggestion: 'Try to be more specific about how you completed the deed. For example, if the deed is about helping someone, describe exactly how you helped them.'
+        }
+      });
+    }
   } catch (error) {
     console.error('Error saving voice entry:', error);
     res.status(500).json({ error: 'Failed to save voice entry' });
