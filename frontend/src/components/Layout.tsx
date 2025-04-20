@@ -36,28 +36,30 @@ const Layout = ({ children }: LayoutProps) => {
       <nav className="bg-white/80 backdrop-blur-sm border-b border-purple-200">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 return (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-colors ${
+                    className={`flex items-center space-x-1 px-2 sm:px-3 py-2 rounded-lg transition-colors ${
                       isActive
                         ? "bg-purple-100 text-purple-600"
                         : "text-gray-600 hover:bg-gray-100"
                     }`}
                   >
                     <item.icon className="w-5 h-5" />
-                    <span className="hidden sm:inline">{item.label}</span>
+                    <span className="hidden sm:inline text-sm">
+                      {item.label}
+                    </span>
                   </Link>
                 );
               })}
             </div>
 
             {/* User Status */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               {isAuthenticated && user && (
                 <div className="flex items-center space-x-2">
                   <Icon
@@ -98,8 +100,8 @@ const Layout = ({ children }: LayoutProps) => {
                     isActive ? "text-purple-600" : "text-gray-500"
                   }`}
                 >
-                  <item.icon className="w-5 h-5" />
-                  <span className="text-xs font-medium">{item.label}</span>
+                  <item.icon className="w-6 h-6" />
+                  <span className="text-xs">{item.label}</span>
                 </Link>
               );
             })}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Generate Maskable Icon</title>
+  </head>
+  <body>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+    <script>
+      function generateMaskableIcon(canvas) {
+        const ctx = canvas.getContext("2d");
+        const size = 512;
+        const safezone = size * 0.1; // 10% padding for safe zone
+
+        // Create gradient background that fills entire space (maskable requirement)
+        const gradient = ctx.createLinearGradient(0, 0, size, size);
+        gradient.addColorStop(0, "#4F46E5");
+        gradient.addColorStop(1, "#EC4899");
+
+        // Fill entire canvas (maskable requirement)
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, size, size);
+
+        // Add text in safe zone
+        ctx.fillStyle = "white";
+        ctx.font = `bold ${size / 5}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("KQ", size / 2, size / 2);
+
+        // Download
+        const link = document.createElement("a");
+        link.download = "maskable-icon.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      }
+
+      generateMaskableIcon(document.getElementById("canvas512"));
+    </script>
+  </body>
+</html>
