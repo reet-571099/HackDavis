@@ -1,89 +1,145 @@
 // Category-specific validation and requirements
 
 const categoryRequirements = {
-    'kindness': {
-      mustInclude: 'The kindness deed should:\n' +
-        '- Directly benefit or positively impact another person or group\n' +
-        '- Include words like give, share, help, thank, appreciate, comfort, or support\n' +
-        '- Result in someone feeling appreciated, helped, or cared for\n' +
-        '- Create a genuine moment of connection between people',
-      keywordCheck: ['give', 'share', 'help', 'thank', 'appreciate', 'comfort', 'support', 'cheer', 'gift', 'surprise']
-    },
-    
-    'inclusivity': {
-      mustInclude: 'The inclusivity deed should:\n' +
-        '- Bring people together or celebrate differences\n' +
-        '- Create positive interactions between different groups\n' +
-        '- Help someone feel included and valued\n' +
-        '- Build understanding and friendship',
-      keywordCheck: ['together', 'friend', 'share', 'join', 'play', 'meet', 'team', 'group', 'include', 'invite', 'welcome', 'everyone'],
-      examples: [
-        'Organize a "Languages of Our Community" event where kids teach each other words from their home languages',
-        'Create an accessible games day where everyone can participate regardless of ability',
-        'Start a "Lunch Buddy" program to include students who usually eat alone',
-        'Organize a cultural show-and-tell where everyone shares something unique about their family traditions'
-      ],
-      antiExamples: [
-        'Just observing differences without interaction',
-        'Activities that only focus on limitations rather than abilities',
-        'Surface-level awareness without meaningful connection',
-        'One-time activities without lasting impact'
-      ]
-    },
-    
-    'earth': {
-      mustInclude: 'The environmental deed should:\n' +
-        '- Directly benefit the planet, reduce waste, or protect natural resources\n' +
-        '- Include hands-on interaction with nature or environmental systems\n' +
-        '- Result in a tangible positive impact on the environment\n' +
-        '- Connect the child to the natural world in a meaningful way',
-      keywordCheck: ['save', 'reduce', 'reuse', 'recycle', 'conserve', 'protect', 'plant', 'grow', 'clean', 'nature']
-    },
-    
-    'learn': {
-      mustInclude: 'The learning deed should:\n' +
-        '- Involve acquiring new knowledge AND sharing it with others\n' +
-        '- Include discovery, research, or experimentation\n' +
-        '- Result in both the child and someone else learning something valuable\n' +
-        '- Create enthusiasm for knowledge and discovery',
-      keywordCheck: ['discover', 'learn', 'teach', 'share', 'research', 'experiment', 'explore', 'question', 'explain', 'demonstrate']
-    },
-    
-    'animals': {
-      mustInclude: 'The animal care deed should:\n' +
-        '- Directly benefit animals or wildlife in some way\n' +
-        '- Include interaction with or support for animals\n' +
-        '- Result in improved welfare or understanding of animals\n' +
-        '- Create compassion toward living creatures',
-      keywordCheck: ['care', 'protect', 'help', 'observe', 'support', 'feed', 'shelter', 'habitat', 'wildlife', 'pets']
-    },
-    
-    'justice': {
-      mustInclude: 'The justice deed should:\n' +
-        '- Address fairness, equality, or helping those in need\n' +
-        '- Include standing up for what\'s right or supporting others\n' +
-        '- Result in creating more fairness or equality in some way\n' +
-        '- Develop understanding of different perspectives',
-      keywordCheck: ['fair', 'equal', 'right', 'help', 'stand', 'voice', 'support', 'need', 'change', 'share']
-    },
-    
-    'women': {
-      mustInclude: 'The women empowerment deed should:\n' +
-        '- Recognize, celebrate, or support women and girls\n' +
-        '- Include learning about women\'s achievements or challenges\n' +
-        '- Result in increased appreciation for women\'s contributions\n' +
-        '- Create awareness of gender equality issues',
-      keywordCheck: ['celebrate', 'support', 'recognize', 'learn', 'achievement', 'equality', 'inspire', 'empower', 'highlight', 'appreciate']
-    },
-    
-    'culture': {
-      mustInclude: 'The cultural awareness deed should:\n' +
-        '- Explore, celebrate, or share cultural traditions or expressions\n' +
-        '- Include learning about different cultural perspectives\n' +
-        '- Result in appreciation for cultural diversity\n' +
-        '- Create connections between different cultural experiences',
-      keywordCheck: ['tradition', 'language', 'celebrate', 'culture', 'diverse', 'heritage', 'custom', 'food', 'art', 'story']
-    }
-  };
+  'kindness': {
+    mustInclude: 'The kindness deed should:\n' +
+      '- Be super simple and quick to do\n' +
+      '- Directly benefit or positively impact another person\n' +
+      '- Include words like give, share, help, thank, smile, or hug\n' +
+      '- Make someone feel happy or appreciated\n' +
+      '- Be something a 5-year-old can easily do',
+    keywordCheck: ['give', 'share', 'help', 'thank', 'smile', 'hug', 'friend', 'card', 'nice', 'kind'],
+    examples: [
+      'Help someone who is struggling to do something',
+      'Give someone a high-five and tell them they\'re awesome',
+      'Draw a happy face for someone who looks sad',
+      'Share your favorite toy with a friend',
+      'Help clean up after snack time',
+      'Say thank you to three people today'
+    ]
+  },
   
-  module.exports = { categoryRequirements };
+  'inclusivity': {
+    mustInclude: 'The inclusivity deed should:\n' +
+      '- Be extremely simple and quick to do\n' +
+      '- Help kids play together or make friends\n' +
+      '- Make someone feel welcome and included\n' +
+      '- Use words like friend, play, share, or invite\n' +
+      '- Be something a 5-year-old can easily understand',
+    keywordCheck: ['friend', 'play', 'share', 'join', 'together', 'invite', 'welcome', 'everyone', 'team', 'group'],
+    examples: [
+       'Notice who might be feeling left out and include them',
+      'Invite someone new to play with you today',
+      'Learn to say hello in a different language',
+      'Notice and say something nice about what makes a friend unique',
+      'Ask a friend to teach you a word from their language',
+      'Make a sign that says "Everyone Belongs Here"'
+    ]
+  },
+  
+  'earth': {
+    mustInclude: 'The environmental deed should:\n' +
+      '- Be very simple and quick to complete\n' +
+      '- Help nature or reduce waste in a small way\n' +
+      '- Use words like plant, water, clean, reuse, or save\n' +
+      '- Connect the child to nature in a simple way\n' +
+      '- Be something a 5-year-old can do with minimal help',
+    keywordCheck: ['plant', 'water', 'clean', 'reuse', 'save', 'pick up', 'trash', 'recycle', 'nature', 'earth'],
+    examples: [
+      'Pick up three pieces of trash outside',
+      'Turn off lights when you leave a room',
+      'Water a plant and say thank you to it',
+      'Reuse a paper bag to make a simple puppet',
+      'Sort recyclables into the right bins'
+    ]
+  },
+  
+  'learn': {
+    mustInclude: 'The learning deed should:\n' +
+      '- Be super simple and quick to do\n' +
+      '- Involve learning one simple fact or skill\n' +
+      '- Include sharing what was learned with someone\n' +
+      '- Use words like learn, teach, show, or tell\n' +
+      '- Be something a 5-year-old can easily do',
+    keywordCheck: ['learn', 'teach', 'show', 'tell', 'count', 'read', 'write', 'draw', 'find', 'discover'],
+    examples: [
+      'Ask your grandpa to tell you a story',
+      'Teach someone how to draw a star',
+      'Ask your friend to show you how to do a cartwheel',
+      'Read a new book and tell someone about it'
+
+    ]
+  },
+  
+  'animals': {
+    mustInclude: 'The animal care deed should:\n' +
+      '- Be extremely simple and quick to complete\n' +
+      '- Help or appreciate animals in a small way\n' +
+      '- Use words like watch, feed, water, or thank\n' +
+      '- Create a moment of connection with animals\n' +
+      '- Be something a 5-year-old can do safely',
+    keywordCheck: ['watch', 'feed', 'water', 'thank', 'pet', 'bird', 'bug', 'draw', 'count', 'observe'],
+    examples: [
+      'Put out water for birds on a hot day',
+      'Draw pictures of five different animals',
+      'Watch ants for five minutes to see what they do',
+      'Count how many different birds you see today',
+      'Answer this - why is it important to protect animals?'
+    ]
+  },
+  
+  'justice': {
+    mustInclude: 'The justice deed should:\n' +
+      '- Be super simple and quick to do\n' +
+      '- Focus on fairness in a child-friendly way\n' +
+      '- Use words like fair, share, equal, or turn\n' +
+      '- Help children understand simple fairness\n' +
+      '- Be something a 5-year-old can easily understand',
+    keywordCheck: ['fair', 'share', 'equal', 'turn', 'same', 'help', 'right', 'kind', 'stand', 'friend'],
+    examples: [
+      'Share treats equally with everyone',
+      'Take turns choosing games with friends',
+      'Stand next to someone who feels left out',
+      'Make sure everyone gets a turn to speak',
+      'Let someone else go first in line',
+      'Stand beside someone who is being treated unfairly'
+    ]
+  },
+  
+  'women': {
+    mustInclude: 'The women empowerment deed should:\n' +
+      '- Be very simple and quick to complete\n' +
+      '- Appreciate or learn about women in a simple way\n' +
+      '- Use words like thank, learn, draw, or help\n' +
+      '- Create a moment of connection or appreciation\n' +
+      '- Be something a 5-year-old can easily do',
+    keywordCheck: ['thank', 'learn', 'draw', 'help', 'mom', 'grandma', 'sister', 'teacher', 'woman', 'girl'],
+    examples: [
+      'Thank a woman who helps you every day',
+      'Draw a picture of a woman you admire',
+      'Ask a woman about her favorite childhood game',
+      'Learn the name of one woman scientist',
+      'Make a card for an important woman in your life',
+      'Tell me about a woman who inspires you'
+    ]
+  },
+  
+  'culture': {
+    mustInclude: 'The cultural awareness deed should:\n' +
+      '- Be extremely simple and quick to do\n' +
+      '- Explore cultures in a child-friendly way\n' +
+      '- Use words like learn, try, listen, or share\n' +
+      '- Create curiosity about different ways of life\n' +
+      '- Be something a 5-year-old can easily understand',
+    keywordCheck: ['learn', 'try', 'listen', 'share', 'food', 'music', 'hello', 'game', 'story', 'dance'],
+    examples: [
+      'Learn to say thank you in a new language',
+      'Try eating with chopsticks for one meal',
+      'Listen to music from another country',
+      'Draw your family\'s favorite food',
+      'Share a special family story with a friend'
+    ]
+  }
+};
+
+module.exports = { categoryRequirements };
