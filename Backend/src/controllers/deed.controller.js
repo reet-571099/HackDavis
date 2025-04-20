@@ -1,66 +1,75 @@
 const deedService = require('../services/deed.service');
+const { db } = require('../config/firebase');
 
-class DeedController {
-  // Get all categories
-  async getCategories(req, res) {
-    try {
-      const categories = deedService.getCategories();
-      res.json(categories);
-    } catch (error) {
-      res.status(500).json({ 
-        error: 'Failed to retrieve categories',
-        details: error.message 
-      });
-    }
+// Get all categories
+const getCategories = async (req, res) => {
+  try {
+    const categories = await deedService.getCategories();
+    res.json(categories);
+  } catch (error) {
+    console.error('Error getting categories:', error);
+    res.status(500).json({ error: 'Failed to get categories' });
   }
+};
 
-  // Generate a deed
-  async generateDeed(req, res) {
-    try {
-      const { category } = req.body;
-      
-      if (!category) {
-        return res.status(400).json({ 
-          error: 'Category is required',
-          validCategories: deedService.getCategories().map(cat => cat.id)
-        });
-      }
-      
-      const deed = await deedService.generateDeed(category);
-      res.json(deed.toJSON());
-    } catch (error) {
-      if (error.message === 'Invalid category') {
-        return res.status(400).json({ 
-          error: 'Invalid category',
-          validCategories: deedService.getCategories().map(cat => cat.id)
-        });
-      }
-      
-      res.status(500).json({ 
-        error: 'Failed to generate deed',
-        details: error.message 
-      });
+// Generate a deed
+const generateDeed = async (req, res) => {
+  try {
+    const { category } = req.body;
+    if (!category) {
+      return res.status(400).json({ error: 'Category is required' });
     }
+    const deed = await deedService.generateDeed(category);
+    res.json(deed);
+  } catch (error) {
+    console.error('Error generating deed:', error);
+    res.status(500).json({ error: 'Failed to generate deed' });
   }
+};
 
-  // Get deed by ID (for future use)
-  async getDeedById(req, res) {
-    try {
-      const { id } = req.params;
-      const deed = deedService.getDeedById(id);
-      
-      if (!deed) {
-        return res.status(404).json({ error: 'Deed not found' });
-      }
-      
-      res.json(deed.toJSON());
-    } catch (error) {
-      res.status(500).json({ 
-        error: 'Failed to retrieve deed',
-        details: error.message 
-      });
+// Get deed by ID
+const getDeedById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deed = await deedService.getDeedById(id);
+    if (!deed) {
+      return res.status(404).json({ error: 'Deed not found' });
     }
+    res.json(deed);
+  } catch (error) {
+    console.error('Error getting deed:', error);
+    res.status(500).json({ error: 'Failed to get deed' });
   }
-}
+};
 
-module.exports = new DeedController();
+// Create a test deed
+const createTestDeed = async (req, res) => {
+  try {
+    const deedId = 'test-deed-' + Date.now();
+    const deedData = {
+      title: 'Help a Friend',
+      description: 'Help your friend with their homework',
+      category: 'helping',
+      points: 10,
+      createdAt: new Date()
+    };
+
+    await db.collection('deeds').doc(deedId).set(deedData);
+    
+    res.status(201).json({
+      message: 'Test deed created successfully',
+      deedId,
+      ...deedData
+    });
+  } catch (error) {
+    console.error('Error creating test deed:', error);
+    res.status(500).json({ error: 'Failed to create test deed' });
+  }
+};
+
+module.exports = {
+  getCategories,
+  generateDeed,
+  getDeedById,
+  createTestDeed
+};
