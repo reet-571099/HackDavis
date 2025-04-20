@@ -4,6 +4,11 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Icon } from "../components/Icon";
 import { BadgeIconName } from "../types/icon";
 import ReactConfetti from "react-confetti";
+import {
+  submitPhoto,
+  submitJournal,
+  submitVoice,
+} from "../services/deedService";
 
 interface GeneratedDeed {
   id: string;
@@ -16,6 +21,17 @@ interface GeneratedDeed {
 
 type EntryType = "text" | "photo" | "audio";
 
+const BADGE_NAMES: Record<string, string> = {
+  kindness: "Kindness Champion",
+  earth: "Earth Explorer",
+  inclusivity: "Inclusion Hero",
+  learn: "Knowledge Seeker",
+  animals: "Animal Friend",
+  justice: "Justice Warrior",
+  women: "Women's Ally",
+  culture: "Cultural Ambassador",
+};
+
 const Deed = () => {
   const navigate = useNavigate();
   const { deedId } = useParams();
@@ -25,6 +41,7 @@ const Deed = () => {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const [currentDeedId, setCurrentDeedId] = useState<string | null>(null);
 
   // Debug logging
   console.log("Deed component rendered with deedId:", deedId);
@@ -46,6 +63,24 @@ const Deed = () => {
     height: window.innerHeight,
   });
 
+  const [verificationResult, setVerificationResult] = useState<{
+    message: string;
+    entryId: string;
+    verification: {
+      matches: boolean;
+      confidence: number;
+      explanation: string;
+      deed?: string;
+      category?: string;
+    };
+  } | null>(null);
+
+  useEffect(() => {
+    if (generatedDeed?.id) {
+      setCurrentDeedId(generatedDeed.id);
+    }
+  }, [generatedDeed]);
+
   // Handle window resize for confetti
   useEffect(() => {
     const handleResize = () => {
@@ -59,13 +94,54 @@ const Deed = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleSubmit = () => {
-    if (submission.content) {
-      setSubmission((prev) => ({ ...prev, status: "success" }));
-      setShowSuccess(true);
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 5000);
-    } else {
+  const handleSubmit = async () => {
+    if (!currentDeedId) return;
+
+    try {
+      let response;
+      switch (selectedEntryType) {
+        case "text":
+          response = await submitJournal(currentDeedId, submission.content);
+          break;
+        case "photo":
+          if (submission.content.startsWith("data:")) {
+            const base64Data = submission.content.split(",")[1];
+            const byteCharacters = atob(base64Data);
+            const byteArrays = [];
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteArrays.push(byteCharacters.charCodeAt(i));
+            }
+            const byteArray = new Uint8Array(byteArrays);
+            const blob = new Blob([byteArray], { type: "image/jpeg" });
+            const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
+            response = await submitPhoto(currentDeedId, file);
+          }
+          break;
+        case "audio":
+          if (submission.content.startsWith("blob:")) {
+            const audioResponse = await fetch(submission.content);
+            const blob = await audioResponse.blob();
+            const file = new File([blob], "audio.m4a", { type: "audio/m4a" });
+            response = await submitVoice(currentDeedId, file);
+          }
+          break;
+      }
+
+      if (response) {
+        setVerificationResult({
+          message: response.message,
+          entryId: response.entryId,
+          verification: response.verification,
+        });
+
+        if (response.verification.matches) {
+          setShowSuccess(true);
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 5000);
+        }
+      }
+    } catch (error) {
+      console.error("Error submitting deed:", error);
       setSubmission((prev) => ({ ...prev, status: "retry" }));
     }
   };
@@ -372,83 +448,158 @@ const Deed = () => {
           I Did It! 🎉
         </motion.button>
 
-        {/* Success Modal */}
+        {/* Empty Submission Message */}
         <AnimatePresence>
-          {showSuccess && (
+          {submission.status === "retry" &&
+            !verificationResult &&
+            !submission.content && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="bg-white rounded-3xl p-6 shadow-xl mt-8"
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="text-4xl">😅</div>
+                  <div>
+                    <h3 className="text-xl font-bold text-purple-800">
+                      Hmm... Seems like we couldn't find anything.
+                    </h3>
+                    <p className="text-gray-700">
+                      Try writing a bit more or uploading a better photo!
+                    </p>
+                  </div>
+                </div>
+                <div className="flex justify-center gap-4">
+                  <button
+                    onClick={() =>
+                      setSubmission((prev) => ({ ...prev, status: "pending" }))
+                    }
+                    className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700"
+                  >
+                    🔁 Try Again
+                  </button>
+                  <button className="bg-purple-100 text-purple-800 px-6 py-2 rounded-full hover:bg-purple-200">
+                    ❓ Need Help?
+                  </button>
+                </div>
+              </motion.div>
+            )}
+        </AnimatePresence>
+
+        {/* Verification Result Modal */}
+        <AnimatePresence>
+          {verificationResult && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
+              className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
             >
               <motion.div
                 initial={{ scale: 0.5 }}
                 animate={{ scale: 1 }}
-                className="bg-white rounded-3xl p-8 max-w-md w-full text-center"
+                className={`bg-white rounded-3xl p-8 max-w-md w-full text-center relative ${
+                  verificationResult.verification.matches
+                    ? "border-l-4 border-green-500"
+                    : "border-l-4 border-red-500"
+                }`}
               >
-                <h2 className="text-3xl font-bold text-purple-800 mb-4">
-                  Amazing job! 🎉
-                </h2>
-                <p className="text-xl text-gray-700 mb-6">
-                  You completed your mission!
-                </p>
-                <div className="bg-yellow-100 rounded-xl p-4 mb-6">
-                  <p className="text-yellow-800 font-semibold">
-                    You unlocked the 🥇 Earth Explorer Badge!
-                  </p>
-                </div>
-                <div className="flex justify-center gap-4">
-                  <button
-                    onClick={() => navigate("/")}
-                    className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700"
-                  >
-                    Back to Home
-                  </button>
-                  <button
-                    onClick={() => navigate("/profile")}
-                    className="bg-purple-100 text-purple-800 px-6 py-2 rounded-full hover:bg-purple-200"
-                  >
-                    View Profile
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Retry Feedback */}
-        <AnimatePresence>
-          {submission.status === "retry" && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="bg-white rounded-3xl p-6 shadow-xl mt-8"
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="text-4xl">😅</div>
-                <div>
-                  <h3 className="text-xl font-bold text-purple-800">
-                    Hmm... Looks like we couldn't see what you did clearly.
-                  </h3>
-                  <p className="text-gray-700">
-                    Try writing a bit more or uploading a better photo!
-                  </p>
-                </div>
-              </div>
-              <div className="flex justify-center gap-4">
+                {/* Close button */}
                 <button
-                  onClick={() =>
-                    setSubmission((prev) => ({ ...prev, status: "pending" }))
-                  }
-                  className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700"
+                  onClick={() => setVerificationResult(null)}
+                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
                 >
-                  🔁 Try Again
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
                 </button>
-                <button className="bg-purple-100 text-purple-800 px-6 py-2 rounded-full hover:bg-purple-200">
-                  ❓ Need Help?
-                </button>
-              </div>
+
+                {verificationResult.verification.matches ? (
+                  <>
+                    <h2 className="text-3xl font-bold text-purple-800 mb-4">
+                      Amazing job! 🎉
+                    </h2>
+                    <p className="text-xl text-gray-700 mb-6">
+                      {verificationResult.message}
+                    </p>
+                    <div className="bg-yellow-100 rounded-xl p-4 mb-6">
+                      <p className="text-yellow-800 font-semibold">
+                        You unlocked the 🥇{" "}
+                        {
+                          BADGE_NAMES[
+                            verificationResult.verification.category ||
+                              "kindness"
+                          ]
+                        }{" "}
+                        Badge!
+                      </p>
+                    </div>
+                    <div className="flex justify-center gap-4">
+                      <button
+                        onClick={() => navigate("/")}
+                        className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700"
+                      >
+                        Back to Home
+                      </button>
+                      <button
+                        onClick={() => navigate("/profile")}
+                        className="bg-purple-100 text-purple-800 px-6 py-2 rounded-full hover:bg-purple-200"
+                      >
+                        View Profile
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-3xl font-bold text-purple-800 mb-4">
+                      Hmm... Let's try again! 😅
+                    </h2>
+                    <p className="text-xl text-gray-700 mb-6">
+                      {verificationResult.message}
+                    </p>
+                    {/* <p className="text-gray-700 mb-6">
+                      {
+                        verificationResult.verification.explanation.split(
+                          "."
+                        )[0]
+                      }
+                      .
+                    </p> */}
+                    <div className="flex justify-center gap-4">
+                      <button
+                        onClick={() => {
+                          setVerificationResult(null);
+                          setSubmission((prev) => ({
+                            ...prev,
+                            status: "pending",
+                          }));
+                        }}
+                        className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700"
+                      >
+                        🔁 Try Again
+                      </button>
+                      <button
+                        onClick={() => navigate("/")}
+                        className="bg-purple-100 text-purple-800 px-6 py-2 rounded-full hover:bg-purple-200"
+                      >
+                        Back to Home
+                      </button>
+                    </div>
+                  </>
+                )}
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>

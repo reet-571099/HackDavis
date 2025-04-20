@@ -9,6 +9,20 @@ interface GeneratedDeed {
   difficultyLevel: string;
 }
 
+interface SubmissionResponse {
+  message: string;
+  entryId: string;
+  verification: {
+    matches: boolean;
+    confidence: number;
+    explanation: string;
+    transcript?: string;
+    deed?: string;
+    category?: string;
+    suggestion?: string;
+  };
+}
+
 // Hardcoded deeds for each category
 const hardcodedDeeds: Record<string, GeneratedDeed[]> = {
   kindness: [
@@ -191,31 +205,86 @@ export const generateDeed = async (
 ): Promise<GeneratedDeed> => {
   try {
     // Commented out API call
-    // const response = await axios.post(
-    //   "http://localhost:4000/api/deeds/generate",
-    //   {
-    //     category,
-    //   }
-    // );
-    // return response.data;
-
-    // Use hardcoded data instead
-    const deeds = hardcodedDeeds[category] || [];
-    const randomIndex = Math.floor(Math.random() * deeds.length);
-    return (
-      deeds[randomIndex] || {
-        id: `${category}-default`,
+    const response = await axios.post(
+      "http://localhost:4000/api/deeds/generate",
+      {
         category,
-        deed: "Be kind to yourself and others",
-        explanation:
-          "Small acts of kindness can make a big difference in someone's day.",
-        funFact:
-          "Kindness is contagious - seeing someone else be kind makes us more likely to be kind ourselves!",
-        difficultyLevel: "easy",
       }
     );
+    return response.data;
+
+    // Use hardcoded data instead
+    // const deeds = hardcodedDeeds[category] || [];
+    // const randomIndex = Math.floor(Math.random() * deeds.length);
+    // return (
+    //   deeds[randomIndex] || {
+    //     id: `${category}-default`,
+    //     category,
+    //     deed: "Be kind to yourself and others",
+    //     explanation:
+    //       "Small acts of kindness can make a big difference in someone's day.",
+    //     funFact:
+    //       "Kindness is contagious - seeing someone else be kind makes us more likely to be kind ourselves!",
+    //     difficultyLevel: "easy",
+    //   }
+    // );
   } catch (error) {
     console.error("Error generating deed:", error);
     throw error;
   }
+};
+
+export const submitPhoto = async (
+  deedId: string,
+  photo: File
+): Promise<SubmissionResponse> => {
+  const formData = new FormData();
+  formData.append("photo", photo);
+  formData.append("deedId", deedId);
+
+  const response = await axios.post(
+    "http://localhost:4000/api/show-tell/photo",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
+};
+
+export const submitJournal = async (
+  deedId: string,
+  content: string
+): Promise<SubmissionResponse> => {
+  const response = await axios.post(
+    "http://localhost:4000/api/show-tell/journal",
+    {
+      deedId,
+      content,
+      type: "reflection",
+    }
+  );
+  return response.data;
+};
+
+export const submitVoice = async (
+  deedId: string,
+  audio: File
+): Promise<SubmissionResponse> => {
+  const formData = new FormData();
+  formData.append("audio", audio);
+  formData.append("deedId", deedId);
+
+  const response = await axios.post(
+    "http://localhost:4000/api/show-tell/voice",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
 };
