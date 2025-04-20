@@ -9,6 +9,7 @@ import {
 } from "../types/icon";
 import { useAuth0 } from "@auth0/auth0-react";
 import axios from "axios";
+import diamondIcon from "../assets/icons/diamond.svg";
 
 // Mock data (replace with actual data from your backend)
 const mockUser = {
@@ -373,7 +374,7 @@ const Profile = () => {
               <p className="text-lg text-purple-600">
                 {streak} days of spreading joy!
                 <img
-                  src="/src/assets/icons/diamond.svg"
+                  src={diamondIcon}
                   alt="diamond"
                   className="w-6 h-6 inline-block ml-2"
                 />
@@ -384,11 +385,7 @@ const Profile = () => {
               transition={{ duration: 2, repeat: Infinity }}
               className="text-5xl"
             >
-              <img
-                src="/src/assets/icons/diamond.svg"
-                alt="diamond"
-                className="w-12 h-12"
-              />
+              <img src={diamondIcon} alt="diamond" className="w-12 h-12" />
             </motion.div>
           </div>
           <motion.div

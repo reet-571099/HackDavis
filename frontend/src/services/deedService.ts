@@ -295,7 +295,7 @@ export const submitPhoto = async (
   photo: File
 ): Promise<SubmissionResponse> => {
   const formData = new FormData();
-  formData.append("photo", photo);
+  formData.append("file", photo);
   formData.append("deedId", deedId);
 
   const response = await axios.post(
