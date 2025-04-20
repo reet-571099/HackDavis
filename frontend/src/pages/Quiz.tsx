@@ -22,28 +22,100 @@ const sampleQuiz: Quiz = {
   category: "Kindness",
   questions: [
     {
-      question: "What should you do if you see someone crying?",
+      question:
+        "What's a kind thing to do if someone is feeling sad at school?",
       options: [
-        "Ignore them",
-        "Ask if they're okay",
-        "Laugh at them",
-        "Walk away",
+        "Tell them to cheer up and walk away",
+        "Laugh and ignore them",
+        "Sit with them and ask if they're okay",
+        "Say 'it's not your problem'",
       ],
-      correctAnswerIndex: 1,
-      explanation: "It's kind to show care and ask how someone is feeling!",
+      correctAnswerIndex: 2,
+      explanation: "Being there for someone who's sad shows kindness and care!",
     },
     {
-      question: "Your friend forgot their lunch. What's the kind thing to do?",
+      question: "What should you do with an empty juice box?",
       options: [
-        "Share your food",
-        "Tell them to buy lunch",
-        "Eat in front of them",
+        "Throw it in the river",
+        "Recycle it if possible",
+        "Burn it in a fire",
+        "Leave it on the ground",
+      ],
+      correctAnswerIndex: 1,
+      explanation: "Recycling helps protect our planet!",
+    },
+    {
+      question:
+        "There's a new kid in your class who speaks a different language. What should you do?",
+      options: [
+        "Only talk to your old friends",
+        "Ask them about their language and invite them to play",
+        "Tell them to learn English first",
         "Ignore them",
       ],
-      correctAnswerIndex: 0,
-      explanation: "Sharing is a great way to show kindness!",
+      correctAnswerIndex: 1,
+      explanation:
+        "Making new friends and learning about different cultures is fun!",
     },
-    // Add more questions as needed
+    {
+      question: "What's a great way to learn something new?",
+      options: [
+        "Ask lots of questions",
+        "Stay quiet so no one knows you don't understand",
+        "Only read books with pictures",
+        "Wait for someone to teach you everything",
+      ],
+      correctAnswerIndex: 0,
+      explanation: "Asking questions helps you learn and grow!",
+    },
+    {
+      question: "What should you do if you see a stray puppy on the street?",
+      options: [
+        "Throw rocks to scare it",
+        "Take it home secretly",
+        "Call an adult or animal shelter for help",
+        "Pretend it's not there",
+      ],
+      correctAnswerIndex: 2,
+      explanation: "Helping animals in need is the kind thing to do!",
+    },
+    {
+      question: "What does it mean to be fair in a game?",
+      options: [
+        "Only let your best friends win",
+        "Change the rules so you win",
+        "Give everyone an equal chance to play",
+        "Let the tallest person go first every time",
+      ],
+      correctAnswerIndex: 2,
+      explanation:
+        "Being fair means everyone gets a chance to play and have fun!",
+    },
+    {
+      question: "Who can be a pilot, doctor, or scientist?",
+      options: [
+        "Only boys",
+        "Only people on TV",
+        "Only adults",
+        "Anyone — girls, boys, anyone who works hard",
+      ],
+      correctAnswerIndex: 3,
+      explanation:
+        "Anyone can achieve their dreams with hard work and determination!",
+    },
+    {
+      question:
+        "Your friend celebrates a holiday you've never heard of. What should you do?",
+      options: [
+        "Make fun of it",
+        "Say it's weird",
+        "Ask them what it's about and learn something new",
+        "Tell them your holiday is better",
+      ],
+      correctAnswerIndex: 2,
+      explanation:
+        "Learning about different cultures helps us understand and appreciate each other!",
+    },
   ],
 };
 

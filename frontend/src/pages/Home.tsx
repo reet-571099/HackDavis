@@ -47,18 +47,18 @@ const testimonials = [
     quote:
       "My daughter loves doing kind deeds now! She's always excited to spin the wheel.",
     author: "Sarah M.",
-    avatar: "girl-0",
+    avatar: "girl-1",
   },
   {
     quote:
       "The badges and stories keep my son motivated to help others. Great app!",
     author: "Michael T.",
-    avatar: "boy-0",
+    avatar: "boy-1",
   },
   {
     quote: "We do the missions together as a family. It's brought us closer!",
     author: "Lisa K.",
-    avatar: "girl-1",
+    avatar: "girl-2",
   },
 ];
 
@@ -168,12 +168,12 @@ const Home = () => {
               >
                 <div className="grid grid-cols-6 gap-2">
                   {[
-                    "boy-0",
-                    "girl-0",
                     "boy-1",
-                    "girl-1",
                     "boy-2",
+                    "girl-1",
                     "girl-2",
+                    "alien-1",
+                    "lion",
                   ].map((avatar, index) => (
                     <motion.div
                       key={index}

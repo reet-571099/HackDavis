@@ -63,7 +63,7 @@ const Layout = ({ children }: LayoutProps) => {
               {isAuthenticated && user && (
                 <div className="flex items-center space-x-2">
                   <Icon
-                    name="boy-0"
+                    name="boy-1"
                     type="avatar"
                     size="sm"
                     className="w-8 h-8"

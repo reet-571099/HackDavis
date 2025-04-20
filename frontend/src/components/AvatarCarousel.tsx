@@ -9,38 +9,33 @@ interface AvatarCarouselProps {
 }
 
 const avatars: AvatarIconName[] = [
-  // Boys
-  "boy-0",
-  "boy-1",
-  "boy-2",
-  "boy-3",
-  "boy-4",
-  "boy-5",
-  "boy-6",
-  "boy-7",
-  "boy-8",
-  "boy-9",
-  "boy-10",
-  "boy-11",
-  "boy-12",
-  "boy-13",
-  "boy-14",
+  // Robots and Aliens
+  "robot-1",
+  "robot-2",
+  "astronaut",
+  "alien-1",
+  "alien-2",
+  "alien-3",
+  // Animals
+  "lion",
+  "bear",
+  "fox",
   // Girls
-  "girl-0",
   "girl-1",
   "girl-2",
   "girl-3",
   "girl-4",
   "girl-5",
   "girl-6",
-  "girl-7",
-  "girl-8",
-  "girl-9",
-  "girl-10",
-  "girl-11",
-  "girl-12",
-  "girl-13",
-  "girl-14",
+  // Boys
+  "boy-1",
+  "boy-2",
+  "boy-3",
+  "boy-4",
+  "boy-5",
+  // Kids
+  "kid-1",
+  "kid-2",
   // Default
   "default",
 ];

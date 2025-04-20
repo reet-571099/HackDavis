@@ -13,37 +13,29 @@ import {
 } from "../types/icon";
 
 // Import all SVG files
-import boy0 from "../assets/avatars/boy-0.svg";
-import boy1 from "../assets/avatars/boy-1.svg";
-import boy2 from "../assets/avatars/boy-2.svg";
-import boy3 from "../assets/avatars/boy-3.svg";
-import boy4 from "../assets/avatars/boy-4.svg";
-import boy5 from "../assets/avatars/boy-5.svg";
-import boy6 from "../assets/avatars/boy-6.svg";
-import boy7 from "../assets/avatars/boy-7.svg";
-import boy8 from "../assets/avatars/boy-8.svg";
-import boy9 from "../assets/avatars/boy-9.svg";
-import boy10 from "../assets/avatars/boy-10.svg";
-import boy11 from "../assets/avatars/boy-11.svg";
-import boy12 from "../assets/avatars/boy-12.svg";
-import boy13 from "../assets/avatars/boy-13.svg";
-import boy14 from "../assets/avatars/boy-14.svg";
-import girl0 from "../assets/avatars/girl-0.svg";
-import girl1 from "../assets/avatars/girl-1.svg";
-import girl2 from "../assets/avatars/girl-2.svg";
-import girl3 from "../assets/avatars/girl-3.svg";
-import girl4 from "../assets/avatars/girl-4.svg";
-import girl5 from "../assets/avatars/girl-5.svg";
-import girl6 from "../assets/avatars/girl-6.svg";
-import girl7 from "../assets/avatars/girl-7.svg";
-import girl8 from "../assets/avatars/girl-8.svg";
-import girl9 from "../assets/avatars/girl-9.svg";
-import girl10 from "../assets/avatars/girl-10.svg";
-import girl11 from "../assets/avatars/girl-11.svg";
-import girl12 from "../assets/avatars/girl-12.svg";
-import girl13 from "../assets/avatars/girl-13.svg";
-import girl14 from "../assets/avatars/girl-14.svg";
-import defaultAvatar from "../assets/avatars/default.svg";
+import robot1 from "../assets/avatars/robot-1.png";
+import robot2 from "../assets/avatars/robot-2.png";
+import astronaut from "../assets/avatars/astronaut.png";
+import alien1 from "../assets/avatars/alien-1.png";
+import alien2 from "../assets/avatars/alien-2.png";
+import alien3 from "../assets/avatars/alien-3.png";
+import lion from "../assets/avatars/lion.png";
+import bear from "../assets/avatars/bear.png";
+import fox from "../assets/avatars/fox.png";
+import girl1 from "../assets/avatars/girl-1.png";
+import girl2 from "../assets/avatars/girl-2.png";
+import girl3 from "../assets/avatars/girl-3.png";
+import girl4 from "../assets/avatars/girl-4.png";
+import girl5 from "../assets/avatars/girl-5.png";
+import girl6 from "../assets/avatars/girl-6.png";
+import boy1 from "../assets/avatars/boy-1.png";
+import boy2 from "../assets/avatars/boy-2.png";
+import boy3 from "../assets/avatars/boy-3.png";
+import boy4 from "../assets/avatars/boy-4.png";
+import boy5 from "../assets/avatars/boy-5.png";
+import kid1 from "../assets/avatars/kid-1.png";
+import kid2 from "../assets/avatars/kid-2.png";
+import defaultAvatar from "../assets/icons/default.svg";
 
 // Import mission icons
 import defaultIcon from "../assets/icons/default.svg";
@@ -129,62 +121,33 @@ export const Icon = ({
   // Avatar icons with SVGs
   if (type === "avatar") {
     const avatarIcons: Record<AvatarIconName, string> = {
-      // Boys
-      "boy-0": boy0,
-      "boy-1": boy1,
-      "boy-2": boy2,
-      "boy-3": boy3,
-      "boy-4": boy4,
-      "boy-5": boy5,
-      "boy-6": boy6,
-      "boy-7": boy7,
-      "boy-8": boy8,
-      "boy-9": boy9,
-      "boy-10": boy10,
-      "boy-11": boy11,
-      "boy-12": boy12,
-      "boy-13": boy13,
-      "boy-14": boy14,
+      // Robots and Aliens
+      "robot-1": robot1,
+      "robot-2": robot2,
+      astronaut: astronaut,
+      "alien-1": alien1,
+      "alien-2": alien2,
+      "alien-3": alien3,
+      // Animals
+      lion: lion,
+      bear: bear,
+      fox: fox,
       // Girls
-      "girl-0": girl0,
       "girl-1": girl1,
       "girl-2": girl2,
       "girl-3": girl3,
       "girl-4": girl4,
       "girl-5": girl5,
       "girl-6": girl6,
-      "girl-7": girl7,
-      "girl-8": girl8,
-      "girl-9": girl9,
-      "girl-10": girl10,
-      "girl-11": girl11,
-      "girl-12": girl12,
-      "girl-13": girl13,
-      "girl-14": girl14,
-      // Cats (using default for now)
-      "cat-0": defaultAvatar,
-      "cat-1": defaultAvatar,
-      "cat-2": defaultAvatar,
-      "cat-3": defaultAvatar,
-      "cat-4": defaultAvatar,
-      // Dogs (using default for now)
-      "dog-0": defaultAvatar,
-      "dog-1": defaultAvatar,
-      "dog-2": defaultAvatar,
-      "dog-3": defaultAvatar,
-      "dog-4": defaultAvatar,
-      // Dragons (using default for now)
-      "dragon-0": defaultAvatar,
-      "dragon-1": defaultAvatar,
-      "dragon-2": defaultAvatar,
-      "dragon-3": defaultAvatar,
-      "dragon-4": defaultAvatar,
-      // Unicorns (using default for now)
-      "unicorn-0": defaultAvatar,
-      "unicorn-1": defaultAvatar,
-      "unicorn-2": defaultAvatar,
-      "unicorn-3": defaultAvatar,
-      "unicorn-4": defaultAvatar,
+      // Boys
+      "boy-1": boy1,
+      "boy-2": boy2,
+      "boy-3": boy3,
+      "boy-4": boy4,
+      "boy-5": boy5,
+      // Kids
+      "kid-1": kid1,
+      "kid-2": kid2,
       // Default
       default: defaultAvatar,
     };

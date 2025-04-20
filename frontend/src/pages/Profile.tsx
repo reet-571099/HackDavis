@@ -14,7 +14,7 @@ import axios from "axios";
 const mockUser = {
   id: "user-123",
   name: "Maya the Brave",
-  avatarUrl: "girl-0",
+  avatarUrl: "girl-1",
   streak: 6,
   totalStars: 43,
 };
@@ -161,7 +161,7 @@ interface Deed {
 }
 
 const Profile = () => {
-  const [selectedAvatar, setSelectedAvatar] = useState<AvatarIconName>("boy-0");
+  const [selectedAvatar, setSelectedAvatar] = useState<AvatarIconName>("boy-1");
   const [isEditingName, setIsEditingName] = useState(false);
   const [name, setName] = useState(
     localStorage.getItem("userName") || "Little Hero"
@@ -211,6 +211,7 @@ const Profile = () => {
     if (enabled) {
       try {
         const token = await getAccessTokenSilently();
+        console.log("Auth0 Token:", token);
 
         const emailData = {
           to: parentEmail || user?.email || "parent@example.com",
@@ -645,7 +646,110 @@ const Profile = () => {
                   Parent Settings
                 </h2>
                 <div className="space-y-6">
-                  {/* ... existing parent settings content ... */}
+                  {/* Name Input */}
+                  <div className="space-y-2">
+                    <label className="text-gray-700 font-medium">
+                      Child's Name
+                    </label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full px-4 py-2 rounded-lg border-2 border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                      placeholder="Enter child's name"
+                    />
+                  </div>
+
+                  {/* Age Input */}
+                  <div className="space-y-2">
+                    <label className="text-gray-700 font-medium">
+                      Child's Age
+                    </label>
+                    <input
+                      type="number"
+                      min="5"
+                      max="12"
+                      value={age}
+                      onChange={(e) => setAge(Number(e.target.value))}
+                      className="w-full px-4 py-2 rounded-lg border-2 border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                      placeholder="Enter child's age"
+                    />
+                  </div>
+
+                  {/* Avatar Selection */}
+                  <div className="space-y-2">
+                    <label className="text-gray-700 font-medium">
+                      Select Avatar
+                    </label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {["boy-1", "girl-1", "robot-1", "astronaut"].map(
+                        (avatar) => (
+                          <button
+                            key={avatar}
+                            onClick={() =>
+                              setSelectedAvatar(avatar as AvatarIconName)
+                            }
+                            className={`p-2 rounded-lg border-2 transition-all ${
+                              selectedAvatar === avatar
+                                ? "border-purple-500 bg-purple-100 scale-105"
+                                : "border-gray-200 hover:border-purple-300"
+                            }`}
+                          >
+                            <Icon
+                              name={avatar as AvatarIconName}
+                              type="avatar"
+                              size="sm"
+                              className="w-8 h-8"
+                            />
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Parent Email */}
+                  <div className="space-y-2">
+                    <label className="text-gray-700 font-medium">
+                      Parent's Email
+                    </label>
+                    <input
+                      type="email"
+                      value={parentEmail}
+                      onChange={(e) => setParentEmail(e.target.value)}
+                      placeholder="Enter parent's email"
+                      className="w-full px-4 py-2 rounded-lg border-2 border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                    />
+                  </div>
+
+                  {/* Weekly Report Toggle */}
+                  <div className="flex items-center justify-between bg-purple-50 p-4 rounded-xl">
+                    <div className="space-y-1">
+                      <span className="text-gray-700 font-medium">
+                        Weekly Kindness Reports
+                      </span>
+                      <p className="text-sm text-gray-500">
+                        Receive weekly updates about your child's progress
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={weeklyReportEnabled}
+                        onChange={(e) =>
+                          handleWeeklyReportToggle(e.target.checked)
+                        }
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                    </label>
+                  </div>
+
+                  <button
+                    onClick={() => setShowParentSettings(false)}
+                    className="w-full bg-purple-600 text-white py-3 rounded-full hover:bg-purple-700 font-medium"
+                  >
+                    Save Settings
+                  </button>
                 </div>
               </motion.div>
             </motion.div>
