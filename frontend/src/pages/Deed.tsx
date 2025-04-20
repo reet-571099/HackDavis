@@ -1,35 +1,28 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Icon } from "../components/Icon";
 import { BadgeIconName } from "../types/icon";
 import ReactConfetti from "react-confetti";
 
-// Mock data for deeds (replace with actual data from your backend)
-const mockDeed = {
-  id: "recycling-1",
-  title: "Be a Recycling Hero Today!",
-  category: "Environment",
-  inputType: "photo" as const,
-  description: "Pick up 5 pieces of litter or help sort recycling",
-  badgeId: "earth-explorer",
-  icon: "leaf" as BadgeIconName,
-  color: "bg-green-400",
-};
-
-// Mock facts for "Did You Know?" section
-const facts = [
-  "Recycling 1 bottle saves enough energy to light a bulb for 4 hours!",
-  "Every ton of paper recycled saves 17 trees!",
-  "Plastic takes 450 years to decompose in nature!",
-];
+interface GeneratedDeed {
+  id: string;
+  category: string;
+  deed: string;
+  explanation: string;
+  funFact: string;
+  difficultyLevel: string;
+}
 
 const Deed = () => {
   const navigate = useNavigate();
   const { deedId } = useParams();
+  const location = useLocation();
+  const generatedDeed = location.state?.generatedDeed as GeneratedDeed;
 
   // Debug logging
   console.log("Deed component rendered with deedId:", deedId);
+  console.log("Generated deed:", generatedDeed);
 
   const [submission, setSubmission] = useState<{
     content: string;
@@ -42,16 +35,10 @@ const Deed = () => {
   });
   const [showSuccess, setShowSuccess] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [currentFact, setCurrentFact] = useState(facts[0]);
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
-
-  // Debug logging for initial render
-  useEffect(() => {
-    console.log("Deed component mounted with deedId:", deedId);
-  }, [deedId]);
 
   // Handle window resize for confetti
   useEffect(() => {
@@ -66,17 +53,6 @@ const Deed = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Rotate facts every 5 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentFact((prev) => {
-        const currentIndex = facts.indexOf(prev);
-        return facts[(currentIndex + 1) % facts.length];
-      });
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
   const handleSubmit = () => {
     // Simulate submission validation
     if (submission.content) {
@@ -88,24 +64,6 @@ const Deed = () => {
       setSubmission((prev) => ({ ...prev, status: "retry" }));
     }
   };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSubmission({
-          content: reader.result as string,
-          type: "image",
-          status: "pending",
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Debug logging for render
-  console.log("Rendering Deed component with mockDeed:", mockDeed);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-100 via-blue-100 to-purple-100 p-4">
@@ -132,31 +90,32 @@ const Deed = () => {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`${mockDeed.color} rounded-3xl p-6 shadow-xl mb-8`}
+          className="bg-purple-600 rounded-3xl p-6 shadow-xl mb-8"
         >
           <div className="flex items-center justify-center mb-4">
             <Icon
-              name={mockDeed.icon}
+              name="default"
               type="badge"
               size="xl"
               className="text-white"
             />
           </div>
           <h1 className="text-3xl font-bold text-white text-center mb-2">
-            {mockDeed.title}
+            {generatedDeed?.deed || "Your Mission"}
           </h1>
           <p className="text-white text-lg text-center mb-4">
-            {mockDeed.description}
+            {generatedDeed?.explanation ||
+              "Complete this mission to earn a badge!"}
           </p>
           <div className="flex justify-center gap-2">
             <span className="bg-white/20 rounded-full px-4 py-1">
               <span className="text-white font-semibold">
-                {mockDeed.category}
+                {generatedDeed?.category || "General"}
               </span>
             </span>
             <span className="bg-white/20 rounded-full px-4 py-1">
               <span className="text-white">
-                {mockDeed.inputType === "photo" ? "📸" : "📝"}
+                {generatedDeed?.difficultyLevel || "Medium"}
               </span>
             </span>
           </div>
@@ -172,62 +131,34 @@ const Deed = () => {
             How did you complete your mission?
           </h2>
 
-          {mockDeed.inputType === "photo" ? (
-            <div className="space-y-4">
-              <label className="block">
-                <span className="text-gray-700">Upload a photo</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="mt-1 block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-purple-50 file:text-purple-700
-                    hover:file:bg-purple-100"
-                />
-              </label>
-              {submission.content && (
-                <div className="mt-4">
-                  <img
-                    src={submission.content}
-                    alt="Submission preview"
-                    className="rounded-lg max-w-full h-auto"
-                  />
-                </div>
-              )}
+          <div className="space-y-4">
+            <label className="block">
+              <span className="text-gray-700">Tell us what you did!</span>
+              <textarea
+                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                rows={4}
+                value={submission.content}
+                onChange={(e) =>
+                  setSubmission((prev) => ({
+                    ...prev,
+                    content: e.target.value,
+                  }))
+                }
+                placeholder="I helped clean up the park by picking up trash..."
+              />
+            </label>
+            <div className="flex gap-2">
+              <button className="p-2 rounded-full bg-purple-100 hover:bg-purple-200">
+                🎉
+              </button>
+              <button className="p-2 rounded-full bg-purple-100 hover:bg-purple-200">
+                😄
+              </button>
+              <button className="p-2 rounded-full bg-purple-100 hover:bg-purple-200">
+                💡
+              </button>
             </div>
-          ) : (
-            <div className="space-y-4">
-              <label className="block">
-                <span className="text-gray-700">Tell us what you did!</span>
-                <textarea
-                  className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                  rows={4}
-                  value={submission.content}
-                  onChange={(e) =>
-                    setSubmission((prev) => ({
-                      ...prev,
-                      content: e.target.value,
-                    }))
-                  }
-                  placeholder="I helped clean up the park by picking up trash..."
-                />
-              </label>
-              <div className="flex gap-2">
-                <button className="p-2 rounded-full bg-purple-100 hover:bg-purple-200">
-                  🎉
-                </button>
-                <button className="p-2 rounded-full bg-purple-100 hover:bg-purple-200">
-                  😄
-                </button>
-                <button className="p-2 rounded-full bg-purple-100 hover:bg-purple-200">
-                  💡
-                </button>
-              </div>
-            </div>
-          )}
+          </div>
 
           {/* Tips Box */}
           <div className="mt-6 p-4 bg-purple-50 rounded-xl">
@@ -246,7 +177,9 @@ const Deed = () => {
           <h3 className="text-xl font-bold text-purple-800 mb-2">
             💡 Did You Know?
           </h3>
-          <p className="text-gray-700">{currentFact}</p>
+          <p className="text-gray-700">
+            {generatedDeed?.funFact || "Fun facts coming soon!"}
+          </p>
         </motion.div>
 
         {/* Submit Button */}

@@ -1,34 +1,22 @@
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-const quotes = [
-  "Every deed you do is a step to change the world!",
-  "Small acts of kindness create big waves of change!",
-  "You're making the world a better place, one deed at a time!",
-  "Your kindness is like a ripple that spreads far and wide!",
-];
+interface QuoteDisplayProps {
+  funFact?: string;
+}
 
-const QuoteDisplay = () => {
-  const [currentQuote, setCurrentQuote] = useState(quotes[0]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentQuote((prev) => {
-        const currentIndex = quotes.indexOf(prev);
-        return quotes[(currentIndex + 1) % quotes.length];
-      });
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
+const QuoteDisplay = ({ funFact }: QuoteDisplayProps) => {
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-3xl p-6 shadow-xl"
     >
-      <p className="text-purple-800 text-xl text-center font-semibold">
-        {currentQuote}
+      <h3 className="text-xl font-bold text-purple-800 mb-2">
+        💡 Did You Know?
+      </h3>
+      <p className="text-gray-700">
+        {funFact ||
+          "Every small act of kindness makes the world a better place!"}
       </p>
     </motion.div>
   );

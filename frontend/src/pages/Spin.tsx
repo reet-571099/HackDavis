@@ -4,10 +4,32 @@ import { useNavigate } from "react-router-dom";
 import { Icon } from "../components/Icon";
 import SpinWheel from "../components/SpinWheel";
 import QuoteDisplay from "../components/QuoteDisplay";
-import { BadgeIconName, PrizeIconName } from "../types/icon";
+import { BadgeIconName } from "../types/icon";
+import { generateDeed } from "../services/deedService";
+
+interface GeneratedDeed {
+  id: string;
+  category: string;
+  deed: string;
+  explanation: string;
+  funFact: string;
+  difficultyLevel: string;
+}
+
+interface DeedCategory {
+  id: string;
+  name: string;
+  icon: BadgeIconName;
+  color: string;
+  bgColor: string;
+  title: string;
+  description: string;
+  deedId: string;
+  generatedDeed?: GeneratedDeed;
+}
 
 // Single source of truth for categories and deeds
-const deedCategories = [
+const deedCategories: DeedCategory[] = [
   {
     id: "kindness",
     name: "Kindness",
@@ -97,6 +119,7 @@ const Spin = () => {
   const [spinResult, setSpinResult] = useState<
     (typeof deedCategories)[0] | null
   >(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Check if user has already spun today
   useEffect(() => {
@@ -117,35 +140,49 @@ const Spin = () => {
     }
   }, []);
 
-  const handleSpinComplete = useCallback((categoryId: string) => {
+  const handleSpinComplete = useCallback(async (categoryId: string) => {
     console.log("handleSpinComplete called with categoryId:", categoryId); // Debug log
     const selectedDeed = deedCategories.find((deed) => deed.id === categoryId);
     if (selectedDeed) {
-      setSpinResult(selectedDeed);
-      setShowResult(true);
-      setHasSpunToday(true);
+      try {
+        setIsLoading(true);
+        const generatedDeed = await generateDeed(categoryId);
+        setSpinResult({
+          ...selectedDeed,
+          generatedDeed,
+        });
+        setShowResult(true);
+        setHasSpunToday(true);
 
-      localStorage.setItem("lastSpinDate", new Date().toISOString());
+        localStorage.setItem("lastSpinDate", new Date().toISOString());
 
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          const resultElement = document.getElementById("result-card");
-          if (resultElement) {
-            resultElement.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-            });
-          }
-        }, 1500);
-      });
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            const resultElement = document.getElementById("result-card");
+            if (resultElement) {
+              resultElement.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+              });
+            }
+          }, 1500);
+        });
+      } catch (error) {
+        console.error("Error generating deed:", error);
+        // Handle error appropriately
+      } finally {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   const handleAcceptDeed = useCallback(
     (deedId: string) => {
-      navigate(`/deed/${deedId}`);
+      navigate(`/deed/${deedId}`, {
+        state: { generatedDeed: spinResult?.generatedDeed },
+      });
     },
-    [navigate]
+    [navigate, spinResult]
   );
 
   // Memoize the categories to prevent unnecessary rerenders
@@ -233,39 +270,59 @@ const Spin = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className={`${spinResult.bgColor} rounded-3xl p-6 shadow-xl mb-8 relative z-20`}
+              className={`${spinResult.bgColor} rounded-3xl p-6 shadow-xl mb-8 relative`}
             >
-              <div className="flex items-center justify-center mb-4">
-                <Icon
-                  name={spinResult.icon}
-                  type="badge"
-                  size="xl"
-                  className="text-white"
-                />
-              </div>
-              <h2 className="text-2xl font-bold text-white text-center mb-2">
-                {spinResult.title}
-              </h2>
-              <div className="bg-white/20 rounded-full px-4 py-1 mb-4 mx-auto text-center w-fit">
-                <span className="text-white font-semibold">
-                  {spinResult.name} Hero
-                </span>
-              </div>
-              <p className="text-white text-lg text-center mb-6">
-                {spinResult.description}
-              </p>
-              <button
-                onClick={() => handleAcceptDeed(spinResult.deedId)}
-                className="w-full bg-white text-purple-800 font-bold py-3 rounded-full text-xl hover:scale-105 transition-transform"
-              >
-                Let's Do This! 🚀
-              </button>
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                    className="mb-4"
+                  >
+                    <Icon name="time-planning" type="prize" size="lg" />
+                  </motion.div>
+                  <p className="text-white text-lg">Generating your deed...</p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-center mb-4">
+                    <Icon
+                      name={spinResult.icon}
+                      type="badge"
+                      size="xl"
+                      className="text-white"
+                    />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white text-center mb-2">
+                    {spinResult.generatedDeed?.deed || spinResult.title}
+                  </h2>
+                  <div className="bg-white/20 rounded-full px-4 py-1 mb-4 mx-auto text-center w-fit">
+                    <span className="text-white font-semibold">
+                      {spinResult.name} Hero
+                    </span>
+                  </div>
+                  <p className="text-white text-lg text-center mb-6">
+                    {spinResult.generatedDeed?.explanation ||
+                      spinResult.description}
+                  </p>
+                  <button
+                    onClick={() => handleAcceptDeed(spinResult.deedId)}
+                    className="w-full bg-white text-purple-800 font-bold py-3 rounded-full text-xl hover:scale-105 transition-transform"
+                  >
+                    Let's Do This! 🚀
+                  </button>
+                </>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Encouragement Quote */}
-        <QuoteDisplay />
+        <QuoteDisplay funFact={spinResult?.generatedDeed?.funFact} />
       </div>
     </div>
   );
