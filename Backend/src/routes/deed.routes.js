@@ -12,4 +12,7 @@ router.post('/generate', deedController.generateDeed);
 // Get deed by ID (for future use)
 router.get('/:id', deedController.getDeedById);
 
+// Create a test deed
+router.post('/test', deedController.createTestDeed);
+
 module.exports = router;
