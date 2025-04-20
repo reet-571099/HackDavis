@@ -175,7 +175,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 py-8 px-4 relative overflow-hidden">
       <FloatingDiamonds />
-      <div className="max-w-4xl mx-auto space-y-8 relative z-10">
+      <div className="max-w-4xl mx-auto space-y-8 relative">
         {/* Profile Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

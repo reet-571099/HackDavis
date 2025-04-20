@@ -1,7 +1,13 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
-import { HomeIcon, TrophyIcon, UserIcon } from "@heroicons/react/24/outline";
+import {
+  HomeIcon,
+  TrophyIcon,
+  UserIcon,
+  ChartBarIcon,
+  QuestionMarkCircleIcon,
+} from "@heroicons/react/24/outline";
 import { Icon } from "./Icon";
 
 interface LayoutProps {
@@ -15,6 +21,8 @@ const Layout = ({ children }: LayoutProps) => {
   const navItems = [
     { path: "/", icon: HomeIcon, label: "Home" },
     { path: "/spin", icon: TrophyIcon, label: "Spin" },
+    { path: "/quiz", icon: QuestionMarkCircleIcon, label: "Quiz" },
+    { path: "/leaderboard", icon: ChartBarIcon, label: "Leaderboard" },
     { path: "/profile", icon: UserIcon, label: "Profile" },
   ];
 

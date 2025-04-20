@@ -11,6 +11,7 @@ import Spin from "./pages/Spin";
 import Deed from "./pages/Deed";
 import Profile from "./pages/Profile";
 import Leaderboard from "./pages/Leaderboard";
+import Quiz from "./pages/Quiz";
 
 const App = () => {
   const { isLoading } = useAuth0();
@@ -70,6 +71,14 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <Leaderboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quiz"
+              element={
+                <ProtectedRoute>
+                  <Quiz />
                 </ProtectedRoute>
               }
             />

@@ -43,7 +43,7 @@ const SpinWheel = React.memo(
 
     // Handle window resize with debounce
     useEffect(() => {
-      let timeout: NodeJS.Timeout;
+      let timeout: ReturnType<typeof setTimeout>;
 
       const handleResize = () => {
         clearTimeout(timeout);
