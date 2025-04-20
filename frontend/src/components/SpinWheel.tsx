@@ -120,7 +120,7 @@ const SpinWheel = React.memo(
                   width: "100%",
                   height: "100%",
                 }}
-                tweenDuration={1000}
+                tweenDuration={5000}
               />
             </motion.div>
           )}
@@ -138,7 +138,7 @@ const SpinWheel = React.memo(
             radiusLineWidth={1}
             fontSize={14}
             textDistance={60}
-            spinDuration={1}
+            spinDuration={0.5}
             disableInitialAnimation
             onStopSpinning={handleSpinComplete}
           />

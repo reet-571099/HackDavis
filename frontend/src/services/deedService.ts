@@ -7,6 +7,7 @@ interface GeneratedDeed {
   explanation: string;
   funFact: string;
   difficultyLevel: string;
+  // emojiUrl?: string; // Commented out for future use
 }
 
 interface SubmissionResponse {
@@ -200,34 +201,89 @@ const hardcodedDeeds: Record<string, GeneratedDeed[]> = {
   ],
 };
 
+// Commented out emoji generation code for future use
+/*
+// Use Vite's environment variables
+const EMOJI_API_TOKEN = import.meta.env.VITE_EMOJI_API_TOKEN || '';
+
+const generateEmoji = async (prompt: string): Promise<string> => {
+  try {
+    // First API call to create emoji
+    const createResponse = await fetch('https://api.emojis.com/api/v1/emojis', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${EMOJI_API_TOKEN}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({
+        kind: 'text_to_emoji',
+        prompt: prompt,
+        enable_prompt_safety_check: true
+      })
+    });
+
+    const createData = await createResponse.json();
+    const emojiId = createData.id;
+
+    // Poll the status every 2 seconds until it's generated
+    const pollStatus = async (): Promise<string> => {
+      const statusResponse = await fetch(`https://api.emojis.com/api/v1/emojis/${emojiId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${EMOJI_API_TOKEN}`,
+          'Accept': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+
+      const statusData = await statusResponse.json();
+      
+      if (statusData.status === 'generated') {
+        return statusData.formats.png['512'];
+      } else if (statusData.status === 'failed') {
+        throw new Error(statusData.error || 'Emoji generation failed');
+      } else {
+        // Wait 2 seconds and try again
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return pollStatus();
+      }
+    };
+
+    return await pollStatus();
+  } catch (error) {
+    console.error('Error generating emoji:', error);
+    throw error;
+  }
+};
+*/
+
 export const generateDeed = async (
   category: string
 ): Promise<GeneratedDeed> => {
   try {
-    // Commented out API call
     const response = await axios.post(
       "http://localhost:4000/api/deeds/generate",
       {
         category,
       }
     );
-    return response.data;
 
-    // Use hardcoded data instead
-    // const deeds = hardcodedDeeds[category] || [];
-    // const randomIndex = Math.floor(Math.random() * deeds.length);
-    // return (
-    //   deeds[randomIndex] || {
-    //     id: `${category}-default`,
-    //     category,
-    //     deed: "Be kind to yourself and others",
-    //     explanation:
-    //       "Small acts of kindness can make a big difference in someone's day.",
-    //     funFact:
-    //       "Kindness is contagious - seeing someone else be kind makes us more likely to be kind ourselves!",
-    //     difficultyLevel: "easy",
-    //   }
-    // );
+    const deed = response.data;
+
+    // Commented out emoji generation for future use
+    /*
+    try {
+      const emojiUrl = await generateEmoji(deed.deed);
+      return { ...deed, emojiUrl };
+    } catch (error) {
+      console.error('Failed to generate emoji, proceeding without it:', error);
+      return deed;
+    }
+    */
+
+    return deed;
   } catch (error) {
     console.error("Error generating deed:", error);
     throw error;

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Icon } from "../components/Icon";
-import { BadgeIconName } from "../types/icon";
+import { BadgeIconName, AvatarIconName } from "../types/icon";
 import ReactConfetti from "react-confetti";
 
 // Mock data (replace with actual data from your backend)
@@ -9,9 +9,9 @@ const mockLeaderboard = [
   {
     rank: 1,
     name: "SuperMaya",
-    avatar: "👧",
+    avatar: "girl-1" as AvatarIconName,
     stars: 42,
-    favoriteBadge: "heart" as BadgeIconName,
+    favoriteBadge: "gift" as BadgeIconName,
     badges: 8,
     favoriteCategory: "kindness",
     isRisingStar: true,
@@ -19,36 +19,36 @@ const mockLeaderboard = [
   {
     rank: 2,
     name: "EcoEthan",
-    avatar: "👦",
+    avatar: "boy-1" as AvatarIconName,
     stars: 38,
-    favoriteBadge: "leaf" as BadgeIconName,
+    favoriteBadge: "park" as BadgeIconName,
     badges: 7,
     favoriteCategory: "environment",
   },
   {
     rank: 3,
     name: "KindKai",
-    avatar: "👦",
+    avatar: "boy-2" as AvatarIconName,
     stars: 35,
-    favoriteBadge: "heart" as BadgeIconName,
+    favoriteBadge: "gift" as BadgeIconName,
     badges: 6,
     favoriteCategory: "kindness",
   },
   {
     rank: 4,
     name: "JusticeJade",
-    avatar: "👧",
+    avatar: "girl-2" as AvatarIconName,
     stars: 32,
-    favoriteBadge: "scale" as BadgeIconName,
+    favoriteBadge: "diamond" as BadgeIconName,
     badges: 5,
     favoriteCategory: "justice",
   },
   {
     rank: 5,
     name: "AnimalAva",
-    avatar: "👧",
+    avatar: "girl-3" as AvatarIconName,
     stars: 30,
-    favoriteBadge: "paw" as BadgeIconName,
+    favoriteBadge: "backpack" as BadgeIconName,
     badges: 5,
     favoriteCategory: "animalLove",
   },
@@ -65,19 +65,19 @@ const mockCurrentUser = {
 const mockPopularBadges = [
   {
     name: "Kindness Cadet",
-    icon: "heart" as BadgeIconName,
+    icon: "gift" as BadgeIconName,
     count: 12,
     color: "bg-pink-400",
   },
   {
     name: "Earth Explorer",
-    icon: "leaf" as BadgeIconName,
+    icon: "park" as BadgeIconName,
     count: 10,
     color: "bg-green-400",
   },
   {
     name: "Justice Warrior",
-    icon: "scale" as BadgeIconName,
+    icon: "trophy-1" as BadgeIconName,
     count: 8,
     color: "bg-purple-400",
   },
@@ -212,7 +212,7 @@ const Leaderboard = () => {
                   whileHover={{ scale: 1.05 }}
                   className="text-6xl mb-2"
                 >
-                  {user.avatar}
+                  <Icon type="avatar" name={user.avatar} size="xl" />
                 </motion.div>
                 {index === 0 && (
                   <motion.div
@@ -281,7 +281,9 @@ const Leaderboard = () => {
                 <div className="text-2xl font-bold text-purple-800 w-8">
                   #{user.rank}
                 </div>
-                <div className="text-4xl">{user.avatar}</div>
+                <div className="text-4xl">
+                  <Icon type="avatar" name={user.avatar} size="lg" />
+                </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-800">{user.name}</h3>
                   <p className="text-sm text-gray-500">
@@ -337,7 +339,7 @@ const Leaderboard = () => {
                 className={`${badge.color} rounded-2xl p-4 text-center text-white`}
               >
                 <div className="text-4xl mb-2">
-                  <Icon name={badge.icon} type="badge" size="xl" />
+                  <Icon type="badge" name={badge.icon} size="xl" />
                 </div>
                 <h3 className="font-bold">{badge.name}</h3>
                 <p className="text-sm opacity-80">{badge.count} earned</p>

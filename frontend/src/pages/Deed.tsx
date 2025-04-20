@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Icon } from "../components/Icon";
@@ -17,6 +17,7 @@ interface GeneratedDeed {
   explanation: string;
   funFact: string;
   difficultyLevel: string;
+  icon: BadgeIconName;
 }
 
 type EntryType = "text" | "photo" | "audio";
@@ -30,6 +31,60 @@ const BADGE_NAMES: Record<string, string> = {
   justice: "Justice Warrior",
   women: "Women's Ally",
   culture: "Cultural Ambassador",
+};
+
+const categoryIcons: Record<string, BadgeIconName[]> = {
+  kindness: ["gift", "default"],
+  earth: ["woods", "park"],
+  inclusivity: ["backpack", "walking"],
+  learn: ["time-planning", "board-games"],
+  animals: ["pizza", "food"],
+  justice: ["basketball", "ticket"],
+  women: ["cooking", "shopping"],
+  culture: ["disco", "movie"],
+};
+
+const FloatingElements = () => {
+  const elements = useMemo(
+    () =>
+      Array.from({ length: 15 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        delay: Math.random() * 2,
+        duration: 2 + Math.random() * 2,
+        type: i % 2 === 0 ? "⭐" : "❤️",
+      })),
+    []
+  );
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      {elements.map((element) => (
+        <motion.div
+          key={element.id}
+          className="absolute text-2xl"
+          style={{
+            left: `${element.x}%`,
+            top: `${element.y}%`,
+          }}
+          animate={{
+            y: [0, -20, 0],
+            opacity: [0.3, 0.8, 0.3],
+            rotate: [0, 180, 360],
+          }}
+          transition={{
+            duration: element.duration,
+            repeat: Infinity,
+            delay: element.delay,
+            ease: "easeInOut",
+          }}
+        >
+          {element.type}
+        </motion.div>
+      ))}
+    </div>
+  );
 };
 
 const Deed = () => {
@@ -46,6 +101,15 @@ const Deed = () => {
   // Debug logging
   console.log("Deed component rendered with deedId:", deedId);
   console.log("Generated deed:", generatedDeed);
+  console.log("Location state:", location.state);
+
+  // If no deed data, redirect to home
+  useEffect(() => {
+    if (!generatedDeed) {
+      console.log("No deed data found, redirecting to home");
+      navigate("/");
+    }
+  }, [generatedDeed, navigate]);
 
   const [submission, setSubmission] = useState<{
     content: string;
@@ -93,6 +157,12 @@ const Deed = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const getRandomIcon = (category: string): BadgeIconName => {
+    const icons = categoryIcons[category.toLowerCase()] || ["default"];
+    const randomIndex = Math.floor(Math.random() * icons.length);
+    return icons[randomIndex];
+  };
 
   const handleSubmit = async () => {
     if (!currentDeedId) return;
@@ -203,45 +273,6 @@ const Deed = () => {
     }
   };
 
-  const FloatingElements = () => {
-    const elements = Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      delay: Math.random() * 2,
-      duration: 2 + Math.random() * 2,
-      type: i % 2 === 0 ? "⭐" : "❤️",
-    }));
-
-    return (
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {elements.map((element) => (
-          <motion.div
-            key={element.id}
-            className="absolute text-2xl"
-            style={{
-              left: `${element.x}%`,
-              top: `${element.y}%`,
-            }}
-            animate={{
-              y: [0, -20, 0],
-              opacity: [0.3, 0.8, 0.3],
-              rotate: [0, 180, 360],
-            }}
-            transition={{
-              duration: element.duration,
-              repeat: Infinity,
-              delay: element.delay,
-              ease: "easeInOut",
-            }}
-          >
-            {element.type}
-          </motion.div>
-        ))}
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 py-8 px-4 relative overflow-hidden">
       <FloatingElements />
@@ -272,7 +303,7 @@ const Deed = () => {
         >
           <div className="flex items-center justify-center mb-4">
             <Icon
-              name="default"
+              name={getRandomIcon(generatedDeed?.category || "default")}
               type="badge"
               size="xl"
               className="text-white"
