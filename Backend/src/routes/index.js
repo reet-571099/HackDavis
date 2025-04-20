@@ -1,16 +1,13 @@
 const express = require('express');
-const router = express.Router();
-const healthRoutes = require('./health.routes');
 const deedRoutes = require('./deed.routes');
+const healthRoutes = require('./health.routes');
 const showTellRoutes = require('./showTell.routes');
 
-// Health check route
+const router = express.Router();
+
+// API routes
+router.use('/deeds', deedRoutes);
 router.use('/health', healthRoutes);
-
-// Deed routes
-router.use('/deed', deedRoutes);
-
-// Show & Tell routes
 router.use('/show-tell', showTellRoutes);
 
 module.exports = router;
