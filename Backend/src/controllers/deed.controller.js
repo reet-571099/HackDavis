@@ -19,8 +19,26 @@ const generateDeed = async (req, res) => {
     if (!category) {
       return res.status(400).json({ error: 'Category is required' });
     }
-    const deed = await deedService.generateDeed(category);
-    res.json(deed);
+    
+    // Generate the deed using the service
+    const generatedDeed = await deedService.generateDeed(category);
+    
+    // Store the deed in the database
+    const deedData = {
+      id: generatedDeed.id,
+      category: generatedDeed.category,
+      deed: generatedDeed.deed,
+      createdAt: new Date()
+    };
+
+    await db.collection('deeds').doc(generatedDeed.id).set(deedData);
+    
+    // Return both the generated deed and confirmation of storage
+    res.json({
+      ...generatedDeed,
+      stored: true,
+      message: 'Deed generated and stored successfully'
+    });
   } catch (error) {
     console.error('Error generating deed:', error);
     res.status(500).json({ error: 'Failed to generate deed' });
