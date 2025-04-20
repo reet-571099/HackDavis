@@ -9,6 +9,9 @@ router.get('/categories', deedController.getCategories);
 // Generate a deed
 router.post('/generate', deedController.generateDeed);
 
+// Get deed statistics
+router.get('/deedstats', deedController.getDeedStats);
+
 // Get deed by ID (for future use)
 router.get('/:id', deedController.getDeedById);
 

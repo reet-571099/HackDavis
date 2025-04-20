@@ -49,35 +49,105 @@ const generateDeed = async (req, res) => {
 const getDeedById = async (req, res) => {
   try {
     const { id } = req.params;
-    const deed = await deedService.getDeedById(id);
-    if (!deed) {
+    const deedDoc = await db.collection('deeds').doc(id).get();
+    
+    if (!deedDoc.exists) {
       return res.status(404).json({ error: 'Deed not found' });
     }
-    res.json(deed);
+    
+    res.json(deedDoc.data());
   } catch (error) {
-    console.error('Error getting deed:', error);
+    console.error('Error getting deed by ID:', error);
     res.status(500).json({ error: 'Failed to get deed' });
+  }
+};
+
+// Get deed statistics
+const getDeedStats = async (req, res) => {
+  try {
+    // Get all showTell entries
+    const showTellSnapshot = await db.collection('showTell').get();
+    
+    if (showTellSnapshot.empty) {
+      return res.json({ deeds: [] });
+    }
+    
+    // Process each showTell entry
+    const deedPromises = showTellSnapshot.docs.map(async (doc) => {
+      const showTellData = doc.data();
+      
+      // Get the deed details using the deedId
+      let deedData = null;
+      if (showTellData.deedId) {
+        const deedDoc = await db.collection('deeds').doc(showTellData.deedId).get();
+        if (deedDoc.exists) {
+          deedData = deedDoc.data();
+        }
+      }
+      
+      // Format createdAt as date only (YYYY-MM-DD)
+      let formattedDate = null;
+      if (showTellData.createdAt) {
+        const date = showTellData.createdAt.toDate ? 
+          showTellData.createdAt.toDate() : 
+          new Date(showTellData.createdAt);
+        
+        formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+      }
+      
+      // Safely access nested explanation from verificationDetails
+      let explanation = '';
+      if (showTellData.verificationDetails && showTellData.verificationDetails.explanation) {
+        explanation = showTellData.verificationDetails.explanation;
+      }
+      
+      // Return the combined data with deedId as the id
+      return {
+        id: showTellData.deedId || null, // Use deedId instead of showTell doc ID
+        explanation: explanation,
+        approved: showTellData.verifiedByAI,
+        createdAt: formattedDate, // Formatted date
+        deed: deedData ? {
+          id: deedData.id,
+          category: deedData.category,
+          deed: deedData.deed
+        } : null
+      };
+    });
+    
+    // Wait for all promises to resolve
+    const deeds = await Promise.all(deedPromises);
+    
+    // Return the results
+    res.json({ deeds });
+  } catch (error) {
+    console.error('Error getting deed statistics:', error);
+    res.status(500).json({ error: 'Failed to get deed statistics' });
   }
 };
 
 // Create a test deed
 const createTestDeed = async (req, res) => {
   try {
-    const deedId = 'test-deed-' + Date.now();
+    const { category, deed } = req.body;
+    
+    if (!category || !deed) {
+      return res.status(400).json({ error: 'Category and deed are required' });
+    }
+    
+    const id = `test-${Date.now()}`;
     const deedData = {
-      title: 'Help a Friend',
-      description: 'Help your friend with their homework',
-      category: 'helping',
-      points: 10,
+      id,
+      category,
+      deed,
       createdAt: new Date()
     };
-
-    await db.collection('deeds').doc(deedId).set(deedData);
     
-    res.status(201).json({
-      message: 'Test deed created successfully',
-      deedId,
-      ...deedData
+    await db.collection('deeds').doc(id).set(deedData);
+    
+    res.json({
+      ...deedData,
+      message: 'Test deed created successfully'
     });
   } catch (error) {
     console.error('Error creating test deed:', error);
@@ -89,5 +159,6 @@ module.exports = {
   getCategories,
   generateDeed,
   getDeedById,
-  createTestDeed
+  createTestDeed,
+  getDeedStats
 };
