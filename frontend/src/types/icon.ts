@@ -90,6 +90,22 @@ export type BadgeIconName =
   | "crown"
   | "diploma"
   | "thumbs-up"
+  | "gift"
+  | "heart"
+  | "woods"
+  | "park"
+  | "backpack"
+  | "walking"
+  | "time-planning"
+  | "board-games"
+  | "pizza"
+  | "food"
+  | "basketball"
+  | "ticket"
+  | "cooking"
+  | "shopping"
+  | "disco"
+  | "movie"
   | "default";
 
 // Prize and activity icons from the icons folder

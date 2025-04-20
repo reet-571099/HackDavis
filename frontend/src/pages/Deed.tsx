@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Icon } from "../components/Icon";
@@ -14,11 +14,17 @@ interface GeneratedDeed {
   difficultyLevel: string;
 }
 
+type EntryType = "text" | "photo" | "audio";
+
 const Deed = () => {
   const navigate = useNavigate();
   const { deedId } = useParams();
   const location = useLocation();
   const generatedDeed = location.state?.generatedDeed as GeneratedDeed;
+  const [selectedEntryType, setSelectedEntryType] = useState<EntryType>("text");
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   // Debug logging
   console.log("Deed component rendered with deedId:", deedId);
@@ -26,7 +32,7 @@ const Deed = () => {
 
   const [submission, setSubmission] = useState<{
     content: string;
-    type: "text" | "image" | "audio";
+    type: EntryType;
     status: "pending" | "success" | "retry";
   }>({
     content: "",
@@ -54,7 +60,6 @@ const Deed = () => {
   }, []);
 
   const handleSubmit = () => {
-    // Simulate submission validation
     if (submission.content) {
       setSubmission((prev) => ({ ...prev, status: "success" }));
       setShowSuccess(true);
@@ -62,6 +67,63 @@ const Deed = () => {
       setTimeout(() => setShowConfetti(false), 5000);
     } else {
       setSubmission((prev) => ({ ...prev, status: "retry" }));
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSubmission({
+          content: reader.result as string,
+          type: "photo",
+          status: "pending",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/wav",
+        });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        setSubmission({
+          content: audioUrl,
+          type: "audio",
+          status: "pending",
+        });
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      mediaRecorderRef.current.stream
+        .getTracks()
+        .forEach((track) => track.stop());
     }
   };
 
@@ -121,51 +183,129 @@ const Deed = () => {
           </div>
         </motion.div>
 
-        {/* Submission Area */}
+        {/* Entry Type Selector */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-3xl p-6 shadow-xl mb-8"
         >
           <h2 className="text-2xl font-bold text-purple-800 mb-4">
-            How did you complete your mission?
+            How would you like to share your deed?
           </h2>
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <button
+              onClick={() => setSelectedEntryType("text")}
+              className={`p-4 rounded-xl text-center transition-all ${
+                selectedEntryType === "text"
+                  ? "bg-purple-600 text-white"
+                  : "bg-purple-100 text-purple-800 hover:bg-purple-200"
+              }`}
+            >
+              <span className="text-2xl mb-2 block">📝</span>
+              Text
+            </button>
+            <button
+              onClick={() => setSelectedEntryType("photo")}
+              className={`p-4 rounded-xl text-center transition-all ${
+                selectedEntryType === "photo"
+                  ? "bg-purple-600 text-white"
+                  : "bg-purple-100 text-purple-800 hover:bg-purple-200"
+              }`}
+            >
+              <span className="text-2xl mb-2 block">📸</span>
+              Photo
+            </button>
+            <button
+              onClick={() => setSelectedEntryType("audio")}
+              className={`p-4 rounded-xl text-center transition-all ${
+                selectedEntryType === "audio"
+                  ? "bg-purple-600 text-white"
+                  : "bg-purple-100 text-purple-800 hover:bg-purple-200"
+              }`}
+            >
+              <span className="text-2xl mb-2 block">🎤</span>
+              Audio
+            </button>
+          </div>
 
-          <div className="space-y-4">
-            <label className="block">
-              <span className="text-gray-700">Tell us what you did!</span>
-              <textarea
-                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                rows={4}
-                value={submission.content}
-                onChange={(e) =>
-                  setSubmission((prev) => ({
-                    ...prev,
-                    content: e.target.value,
-                  }))
-                }
-                placeholder="I helped clean up the park by picking up trash..."
-              />
-            </label>
-            <div className="flex gap-2">
-              <button className="p-2 rounded-full bg-purple-100 hover:bg-purple-200">
-                🎉
-              </button>
-              <button className="p-2 rounded-full bg-purple-100 hover:bg-purple-200">
-                😄
-              </button>
-              <button className="p-2 rounded-full bg-purple-100 hover:bg-purple-200">
-                💡
-              </button>
+          {/* Entry Content */}
+          {selectedEntryType === "text" && (
+            <div className="space-y-4">
+              <label className="block">
+                <span className="text-gray-700">Tell us what you did!</span>
+                <textarea
+                  className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                  rows={4}
+                  value={submission.content}
+                  onChange={(e) =>
+                    setSubmission((prev) => ({
+                      ...prev,
+                      content: e.target.value,
+                      type: "text",
+                    }))
+                  }
+                  placeholder="I helped clean up the park by picking up trash..."
+                />
+              </label>
             </div>
-          </div>
+          )}
 
-          {/* Tips Box */}
-          <div className="mt-6 p-4 bg-purple-50 rounded-xl">
-            <p className="text-purple-800">
-              💡 Need help? Try asking a parent to take your picture!
-            </p>
-          </div>
+          {selectedEntryType === "photo" && (
+            <div className="space-y-4">
+              <label className="block">
+                <span className="text-gray-700">Upload a photo</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="mt-1 block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-purple-50 file:text-purple-700
+                    hover:file:bg-purple-100"
+                />
+              </label>
+              {submission.content && (
+                <div className="mt-4">
+                  <img
+                    src={submission.content}
+                    alt="Submission preview"
+                    className="rounded-lg max-w-full h-auto"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {selectedEntryType === "audio" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-center gap-4">
+                {!isRecording ? (
+                  <button
+                    onClick={startRecording}
+                    className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 flex items-center gap-2"
+                  >
+                    <span>🎤</span>
+                    Start Recording
+                  </button>
+                ) : (
+                  <button
+                    onClick={stopRecording}
+                    className="bg-red-600 text-white px-6 py-2 rounded-full hover:bg-red-700 flex items-center gap-2"
+                  >
+                    <span>⏹️</span>
+                    Stop Recording
+                  </button>
+                )}
+              </div>
+              {submission.content && (
+                <div className="mt-4">
+                  <audio controls src={submission.content} className="w-full" />
+                </div>
+              )}
+            </div>
+          )}
         </motion.div>
 
         {/* Did You Know? Box */}

@@ -28,12 +28,31 @@ interface DeedCategory {
   generatedDeed?: GeneratedDeed;
 }
 
+// Map of categories to their possible icons
+const categoryIcons: Record<string, BadgeIconName[]> = {
+  kindness: ["gift", "default"],
+  earth: ["woods", "park"],
+  inclusivity: ["backpack", "walking"],
+  learn: ["time-planning", "board-games"],
+  animals: ["pizza", "food"],
+  justice: ["basketball", "ticket"],
+  women: ["cooking", "shopping"],
+  culture: ["disco", "movie"],
+};
+
+// Function to get a random icon for a category
+const getRandomIcon = (categoryId: string): BadgeIconName => {
+  const icons = categoryIcons[categoryId] || ["default"];
+  const randomIndex = Math.floor(Math.random() * icons.length);
+  return icons[randomIndex];
+};
+
 // Single source of truth for categories and deeds
 const deedCategories: DeedCategory[] = [
   {
     id: "kindness",
     name: "Kindness",
-    icon: "heart" as BadgeIconName,
+    icon: "thumbs-up" as BadgeIconName,
     color: "#EC4899",
     bgColor: "bg-pink-400",
     title: "Be a Kindness Champion!",
@@ -43,7 +62,7 @@ const deedCategories: DeedCategory[] = [
   {
     id: "earth",
     name: "Earth Hero",
-    icon: "leaf" as BadgeIconName,
+    icon: "default" as BadgeIconName,
     color: "#10B981",
     bgColor: "bg-green-400",
     title: "Be a Planet Protector!",
@@ -53,7 +72,7 @@ const deedCategories: DeedCategory[] = [
   {
     id: "inclusivity",
     name: "Inclusivity",
-    icon: "users" as BadgeIconName,
+    icon: "default" as BadgeIconName,
     color: "#3B82F6",
     bgColor: "bg-indigo-400",
     title: "Be an Inclusivity Champion!",
@@ -63,7 +82,7 @@ const deedCategories: DeedCategory[] = [
   {
     id: "learn",
     name: "Learn & Share",
-    icon: "lightbulb" as BadgeIconName,
+    icon: "diploma" as BadgeIconName,
     color: "#F59E0B",
     bgColor: "bg-amber-400",
     title: "Be a Knowledge Sharer!",
@@ -73,7 +92,7 @@ const deedCategories: DeedCategory[] = [
   {
     id: "animals",
     name: "Animal Love",
-    icon: "paw" as BadgeIconName,
+    icon: "default" as BadgeIconName,
     color: "#8B5CF6",
     bgColor: "bg-yellow-400",
     title: "Be an Animal Friend!",
@@ -83,7 +102,7 @@ const deedCategories: DeedCategory[] = [
   {
     id: "justice",
     name: "Social Justice",
-    icon: "scale" as BadgeIconName,
+    icon: "default" as BadgeIconName,
     color: "#EF4444",
     bgColor: "bg-purple-400",
     title: "Be a Justice Warrior!",
@@ -93,7 +112,7 @@ const deedCategories: DeedCategory[] = [
   {
     id: "women",
     name: "Women Empowerment",
-    icon: "female" as BadgeIconName,
+    icon: "default" as BadgeIconName,
     color: "#EC4899",
     bgColor: "bg-rose-400",
     title: "Be a Women's Advocate!",
@@ -103,7 +122,7 @@ const deedCategories: DeedCategory[] = [
   {
     id: "culture",
     name: "Cultural Awareness",
-    icon: "book" as BadgeIconName,
+    icon: "crown" as BadgeIconName,
     color: "#F59E0B",
     bgColor: "bg-blue-400",
     title: "Be a Culture Explorer!",
@@ -147,8 +166,11 @@ const Spin = () => {
       try {
         setIsLoading(true);
         const generatedDeed = await generateDeed(categoryId);
+        // Get a random icon for this category
+        const randomIcon = getRandomIcon(categoryId);
         setSpinResult({
           ...selectedDeed,
+          icon: randomIcon, // Update the icon with a random one
           generatedDeed,
         });
         setShowResult(true);

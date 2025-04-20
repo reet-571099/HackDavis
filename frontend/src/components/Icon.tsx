@@ -158,6 +158,23 @@ export const Icon = ({
       crown: "/src/assets/badges/crown.svg",
       diploma: "/src/assets/badges/diploma.svg",
       "thumbs-up": "/src/assets/badges/thumbs-up.svg",
+      // New icons from the icons directory
+      gift: "/src/assets/icons/gift.svg",
+      heart: "/src/assets/icons/default.svg",
+      woods: "/src/assets/icons/woods.svg",
+      park: "/src/assets/icons/park.svg",
+      backpack: "/src/assets/icons/backpack.svg",
+      walking: "/src/assets/icons/walking.svg",
+      "time-planning": "/src/assets/icons/time-planning.svg",
+      "board-games": "/src/assets/icons/board-games.svg",
+      pizza: "/src/assets/icons/pizza.svg",
+      food: "/src/assets/icons/food.svg",
+      basketball: "/src/assets/icons/basketball.svg",
+      ticket: "/src/assets/icons/ticket.svg",
+      cooking: "/src/assets/icons/cooking.svg",
+      shopping: "/src/assets/icons/shopping.svg",
+      disco: "/src/assets/icons/disco.svg",
+      movie: "/src/assets/icons/movie.svg",
       default: "/src/assets/badges/default.svg",
     };
 
