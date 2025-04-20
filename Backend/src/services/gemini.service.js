@@ -1,69 +1,140 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const config = require('../config/config');
-const Deed = require('../models/deed.model');
 
 class GeminiService {
   constructor() {
-    this.genAI = new GoogleGenerativeAI(config.geminiApiKey);
+    // Initialize the Gemini client
+    this.client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    this.model = this.client.getGenerativeModel({ model: 'gemini-1.5-flash' });
   }
 
-  // Generate a deed based on category
-  async generateDeed(category) {
+  async analyzeImage(imageBase64, category) {
     try {
-      // Validate category
-      if (!config.categories[category]) {
-        throw new Error('Invalid category');
+      console.log('Analyzing image with Gemini AI...');
+
+      // Create the prompt based on the category
+      const prompt = this.createPrompt(category);
+
+      // Generate content with the image
+      const result = await this.model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            mimeType: 'image/jpeg',
+            data: imageBase64
+          }
+        }
+      ]);
+
+      const response = await result.response;
+      const text = response.text();
+
+      // Clean the response text by removing markdown formatting
+      const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
+
+      // Parse the response to extract the JSON object
+      try {
+        const analysis = JSON.parse(cleanText);
+        return {
+          matches: analysis.matches,
+          confidence: analysis.confidence,
+          explanation: analysis.explanation
+        };
+      } catch (parseError) {
+        console.error('Error parsing Gemini response:', parseError);
+        console.error('Raw response:', text);
+        throw new Error('Failed to parse Gemini AI response');
       }
+    } catch (error) {
+      console.error('Gemini AI error:', error);
+      throw new Error(`Gemini AI error: ${error.message}`);
+    }
+  }
 
-      // Get category description
-      const categoryDesc = config.categories[category];
+  createPrompt(category) {
+    return `Analyze this image and determine if it matches the category "${category}".
+    
+    Categories and their meanings:
+    - helping: Shows someone actively helping or assisting another person
+    - environment: Shows environmental conservation or cleanup activities
+    - kindness: Shows acts of kindness, compassion, or positive social interaction
+    - sharing: Shows sharing of resources, knowledge, or time
+    
+    Requirements:
+    1. The image MUST clearly show an act matching the specified category
+    2. The action must be the main focus of the image
+    3. The context must be appropriate for the category
+    
+    Return ONLY a JSON object in this exact format, with no additional text or formatting:
+    {
+      "matches": boolean,
+      "confidence": number between 0 and 1,
+      "explanation": "detailed explanation"
+    }`;
+  }
+
+  async analyzeAudio(audioBase64, category) {
+    try {
+      console.log('Analyzing audio with Gemini AI...');
       
-      // Create model and generate deed
-      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+      const prompt = this.createAudioPrompt(category);
       
-      const prompt = `Generate a fun, engaging, and meaningful task/deed for children aged 6-13 years old related to ${categoryDesc}.
+      const result = await this.model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            mimeType: 'audio/mp3',
+            data: audioBase64
+          }
+        }
+      ]);
 
-The deed should:
-- Be simple enough for a child to complete in under 30 minutes
-- Teach a valuable lesson or build good character
-- Be fun and engaging
-- Be safe and appropriate for children
-- Include a brief explanation of why this deed matters (1-2 sentences)
-- Optionally include a fun fact related to the theme
-
-Please format the response as a JSON object with fields:
-- deed: The main task description (25 words max)
-- explanation: Why this deed matters (1-2 short sentences)
-- funFact: A relevant fun fact (optional)
-- difficultyLevel: A number from 1-3 (1=easy, 2=medium, 3=challenging)
-
-Don't include any other text outside the JSON object.`;
-
-      const result = await model.generateContent(prompt);
-      const response = result.response;
+      const response = await result.response;
       const text = response.text();
       
       // Clean the response text by removing markdown formatting
       const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
       
-      // Parse the JSON from the cleaned response
-      const deedData = JSON.parse(cleanText);
-      
-      // Create a new Deed object
-      const deed = new Deed({
-        category: category,
-        deed: deedData.deed,
-        explanation: deedData.explanation,
-        funFact: deedData.funFact,
-        difficultyLevel: deedData.difficultyLevel,
-        id: Date.now().toString() // Simple ID generation
-      });
-      
-      return deed;
+      try {
+        const analysis = JSON.parse(cleanText);
+        return {
+          matches: analysis.matches,
+          confidence: analysis.confidence,
+          explanation: analysis.explanation,
+          transcript: analysis.transcript
+        };
+      } catch (parseError) {
+        console.error('Error parsing Gemini response:', parseError);
+        console.error('Raw response:', text);
+        throw new Error('Failed to parse Gemini AI response');
+      }
     } catch (error) {
-      console.error('Error generating deed:', error);
-      throw error;
+      console.error('Gemini AI error:', error);
+      throw new Error(`Gemini AI error: ${error.message}`);
     }
+  }
+
+  createAudioPrompt(category) {
+    return `Analyze this audio recording and determine if it matches the category "${category}".
+    
+    Categories and their meanings:
+    - helping: Describes someone helping or assisting another person
+    - environment: Describes environmental conservation or cleanup activities
+    - kindness: Describes acts of kindness, compassion, or positive social interaction
+    - sharing: Describes sharing of resources, knowledge, or time
+    
+    Requirements:
+    1. The audio MUST clearly describe an act matching the specified category
+    2. The description must be the main focus of the audio
+    3. The context must be appropriate for the category
+    
+    Return ONLY a JSON object in this exact format, with no additional text or formatting:
+    {
+      "matches": boolean,
+      "confidence": number between 0 and 1,
+      "explanation": "detailed explanation",
+      "transcript": "transcription of the audio"
+    }`;
   }
 }
 

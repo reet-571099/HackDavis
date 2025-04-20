@@ -7,6 +7,14 @@ module.exports = {
   port: process.env.PORT || 3000,
   geminiApiKey: process.env.GEMINI_API_KEY,
   environment: process.env.NODE_ENV || 'development',
+  
+  // Firebase Configuration
+  firebase: {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY
+  },
+
   // Add more configuration options as needed
   categories: {
     'kindness': '💞 Acts of kindness towards others',
