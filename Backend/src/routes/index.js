@@ -8,7 +8,7 @@ const showTellRoutes = require('./showTell.routes');
 router.use('/health', healthRoutes);
 
 // Deed routes
-router.use('/deed', deedRoutes);
+router.use('/deeds', deedRoutes);
 
 // Show & Tell routes
 router.use('/show-tell', showTellRoutes);
