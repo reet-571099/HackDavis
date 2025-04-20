@@ -12,9 +12,10 @@ export const auth0Config = {
   clientId: import.meta.env.VITE_AUTH0_CLIENT_ID || "",
   authorizationParams: {
     redirect_uri: getRedirectUri(),
-    audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+    audience: "https://dev-tajhnjsaemxki5cz.us.auth0.com/api/v2/",
     response_type: "code",
     response_mode: "query",
+    scope: "openid profile email offline_access send:email",
   },
   onRedirectCallback: (appState: any) => {
     window.history.replaceState(
@@ -25,4 +26,7 @@ export const auth0Config = {
   },
   useRefreshTokens: true,
   cacheLocation: "localstorage" as CacheLocation,
+  advancedOptions: {
+    defaultScope: "openid profile email offline_access send:email",
+  },
 };

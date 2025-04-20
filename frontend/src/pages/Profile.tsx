@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Icon } from "../components/Icon";
 import {
@@ -7,6 +7,8 @@ import {
   PrizeIconName,
   BadgeIconName,
 } from "../types/icon";
+import { useAuth0 } from "@auth0/auth0-react";
+import axios from "axios";
 
 // Mock data (replace with actual data from your backend)
 const mockUser = {
@@ -129,26 +131,34 @@ const mockBadges = {
   ],
 };
 
-const mockDeedHistory = [
-  {
-    id: "deed-1",
-    title: "Helped a friend tie their shoes",
-    status: "completed" as const,
-    date: "2 days ago",
-    type: "text" as const,
-    category: "kindness",
-    icon: "medal-0" as BadgeIconName,
-  },
-  {
-    id: "deed-2",
-    title: "Picked up trash at the park",
-    status: "completed" as const,
-    date: "3 days ago",
-    type: "photo" as const,
-    category: "environment",
-    icon: "medal-1" as BadgeIconName,
-  },
-];
+const categoryIcons: Record<string, BadgeIconName[]> = {
+  kindness: ["gift", "default"],
+  earth: ["woods", "park"],
+  inclusivity: ["backpack", "walking"],
+  learn: ["time-planning", "board-games"],
+  animals: ["pizza", "food"],
+  justice: ["basketball", "ticket"],
+  women: ["cooking", "shopping"],
+  culture: ["disco", "movie"],
+};
+
+// Function to get a random icon for a category
+const getRandomIcon = (category: string): BadgeIconName => {
+  const icons = categoryIcons[category] || ["default"];
+  const randomIndex = Math.floor(Math.random() * icons.length);
+  return icons[randomIndex];
+};
+
+interface Deed {
+  id: string;
+  explanation: string;
+  approved: boolean;
+  createdAt: string;
+  deed: {
+    deed: string;
+    category: string;
+  };
+}
 
 const Profile = () => {
   const [selectedAvatar, setSelectedAvatar] = useState<AvatarIconName>("boy-0");
@@ -161,10 +171,14 @@ const Profile = () => {
   const [selectedBadge, setSelectedBadge] = useState<
     (typeof mockBadges.earned)[0] | null
   >(null);
-  const [selectedDeed, setSelectedDeed] = useState<
-    (typeof mockDeedHistory)[0] | null
-  >(null);
+  const [selectedDeed, setSelectedDeed] = useState<Deed | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [weeklyReportEnabled, setWeeklyReportEnabled] = useState(false);
+  const [age, setAge] = useState<number>(8);
+  const [parentEmail, setParentEmail] = useState<string>("");
+  const { user, getAccessTokenSilently } = useAuth0();
+  const [deeds, setDeeds] = useState<Deed[]>([]);
+  const [showAllDeeds, setShowAllDeeds] = useState(false);
 
   // Filter badges based on selected category
   const filteredEarnedBadges =
@@ -181,11 +195,68 @@ const Profile = () => {
           (badge) => badge.category === selectedCategory
         );
 
+  // Calculate displayed deeds based on showAllDeeds state and sort by date
+  const displayedDeeds = (showAllDeeds ? deeds : deeds.slice(0, 5)).sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
   const handleNameSave = (newName: string) => {
     setName(newName);
     localStorage.setItem("userName", newName);
     setIsEditingName(false);
   };
+
+  const handleWeeklyReportToggle = async (enabled: boolean) => {
+    setWeeklyReportEnabled(enabled);
+    if (enabled) {
+      try {
+        const token = await getAccessTokenSilently();
+
+        const emailData = {
+          to: parentEmail || user?.email || "parent@example.com",
+        };
+
+        const response = await fetch("http://localhost:4000/api/send-email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(emailData),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(
+            `Failed to send email: ${response.status} ${errorText}`
+          );
+        }
+
+        console.log("Email sent successfully");
+      } catch (error) {
+        console.error("Error sending email:", error);
+        // Revert the toggle if email sending fails
+        setWeeklyReportEnabled(false);
+        // Show error to user
+        alert("Failed to send email. Please try again later.");
+      }
+    }
+  };
+
+  useEffect(() => {
+    const fetchDeeds = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:4000/api/deeds/deedstats"
+        );
+        setDeeds(response.data.deeds);
+      } catch (error) {
+        console.error("Error fetching deeds:", error);
+      }
+    };
+
+    fetchDeeds();
+  }, []);
 
   // Floating elements effect
   const FloatingElements = () => {
@@ -230,7 +301,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 py-8 px-4 relative overflow-hidden">
       <FloatingElements />
-      <div className="max-w-4xl mx-auto space-y-8 relative">
+      <div className="max-w-4xl mx-auto relative">
         {/* Profile Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -300,7 +371,7 @@ const Profile = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-4 border-purple-200 shadow-xl"
+          className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-4 border-purple-200 shadow-xl mb-8 mt-8"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -469,22 +540,30 @@ const Profile = () => {
             Your Mission Logbook
           </h2>
           <div className="space-y-4">
-            {mockDeedHistory.map((deed) => (
+            {displayedDeeds.map((deed) => (
               <motion.div
-                key={deed.id}
+                key={deed?.id}
                 whileHover={{ scale: 1.02 }}
                 onClick={() => setSelectedDeed(deed)}
                 className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl cursor-pointer"
               >
                 <div className="text-3xl">
-                  <Icon name={deed.icon} type="badge" size="lg" />
+                  <Icon
+                    name={getRandomIcon(deed?.deed?.category)}
+                    type="badge"
+                    size="lg"
+                  />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-800">{deed.title}</h3>
-                  <p className="text-sm text-gray-500">{deed.date}</p>
+                  <h3 className="font-semibold text-gray-800">
+                    {deed?.deed?.deed}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {new Date(deed?.createdAt).toLocaleDateString()}
+                  </p>
                 </div>
                 <span className="text-2xl">
-                  {deed.status === "completed" ? (
+                  {deed?.approved ? (
                     <Icon name="thumbs-up" type="badge" size="md" />
                   ) : (
                     <Icon name="default" type="badge" size="md" />
@@ -493,6 +572,16 @@ const Profile = () => {
               </motion.div>
             ))}
           </div>
+          {deeds.length > 5 && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowAllDeeds(!showAllDeeds)}
+              className="mt-4 w-full bg-purple-100 text-purple-800 py-2 rounded-full hover:bg-purple-200 font-medium"
+            >
+              {showAllDeeds ? "Show Less" : "Show All"}
+            </motion.button>
+          )}
         </motion.div>
 
         {/* Parent Settings Button */}
@@ -502,11 +591,20 @@ const Profile = () => {
           onClick={() => setShowParentSettings(true)}
           className="fixed bottom-4 right-4 bg-purple-600 text-white p-4 rounded-full shadow-lg z-30"
         >
-          <img
-            src="https://imgproxy.attic.sh/insecure/f:png/plain/https://attic.sh/yxiupo64zwmzaf3v92pq47tehl0v"
-            alt="settings"
-            className="w-6 h-6"
-          />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+            />
+          </svg>
         </motion.button>
 
         {/* Parent Settings Modal */}
@@ -516,46 +614,39 @@ const Profile = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-40"
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-40"
             >
               <motion.div
                 initial={{ scale: 0.5 }}
                 animate={{ scale: 1 }}
-                className="bg-white rounded-3xl p-8 max-w-md w-full relative"
+                className="bg-white rounded-3xl p-8 max-w-md w-full relative mx-4"
               >
-                <h2 className="text-2xl font-bold text-purple-800 mb-4">
-                  Parent Settings
-                </h2>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-700">
-                      Send weekly kindness reports
-                    </span>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-                    </label>
-                  </div>
-                  <div className="p-4 bg-purple-50 rounded-xl">
-                    <p className="text-purple-800">
-                      Hi Parent! {mockUser.name}'s doing great. Her favorite
-                      category is Kindness!
-                    </p>
-                  </div>
-                  <button className="w-full bg-purple-600 text-white py-2 rounded-full hover:bg-purple-700">
-                    Give Feedback
-                  </button>
-                </div>
                 <button
                   onClick={() => setShowParentSettings(false)}
-                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-50"
+                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
                 >
-                  <img
-                    src="https://imgproxy.attic.sh/insecure/f:png/plain/https://imgproxy.attic.sh/wbDNYnar-BXWyB4JjxcfhMD9ucAGfGFUxcPdxYLsm2U/rs:fit:768:768:1:1/t:1:FF00FF:false:false/aHR0cHM6Ly9hdHRpYy5zaC84NXR3cWo4b2lqbDFpZ2hwbmtneXU0Y2lwdGpj"
-                    alt="close"
-                    className="w-6 h-6"
-                  />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
                 </button>
+
+                <h2 className="text-2xl font-bold text-purple-800 mb-6 text-center">
+                  Parent Settings
+                </h2>
+                <div className="space-y-6">
+                  {/* ... existing parent settings content ... */}
+                </div>
               </motion.div>
             </motion.div>
           )}
@@ -614,30 +705,35 @@ const Profile = () => {
               >
                 <div className="flex items-center gap-4 mb-4">
                   <div className="text-4xl">
-                    <Icon name={selectedDeed.icon} type="badge" size="lg" />
+                    <Icon
+                      name={getRandomIcon(selectedDeed?.deed?.category)}
+                      type="badge"
+                      size="lg"
+                    />
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-gray-800">
-                      {selectedDeed.title}
+                      {selectedDeed?.deed?.deed}
                     </h2>
-                    <p className="text-gray-500">{selectedDeed.date}</p>
+                    <p className="text-gray-500">
+                      {new Date(selectedDeed?.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
-                {selectedDeed.type === "text" && (
-                  <p className="text-gray-700 mb-4">
-                    "I helped my friend tie their shoes during recess. They were
-                    really happy!"
-                  </p>
-                )}
-                {selectedDeed.type === "photo" && (
-                  <div className="mb-4">
-                    <img
-                      src="https://via.placeholder.com/300"
-                      alt="Mission submission"
-                      className="rounded-lg w-full"
-                    />
-                  </div>
-                )}
+                <div className="mb-6">
+                  <h3 className="font-semibold text-gray-700 mb-2">
+                    Explanation:
+                  </h3>
+                  <p className="text-gray-700">{selectedDeed?.explanation}</p>
+                </div>
+                <div className="flex items-center gap-2 mb-6">
+                  <span className="text-gray-700 font-semibold">Status:</span>
+                  {selectedDeed?.approved ? (
+                    <span className="text-green-600">Approved</span>
+                  ) : (
+                    <span className="text-red-600">Not Approved</span>
+                  )}
+                </div>
                 <button
                   onClick={() => setSelectedDeed(null)}
                   className="w-full bg-purple-600 text-white py-2 rounded-full hover:bg-purple-700"
