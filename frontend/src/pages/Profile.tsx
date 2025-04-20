@@ -32,7 +32,7 @@ const mockBadges = {
       id: "kindness-1",
       name: "Kindness Cadet",
       category: "kindness",
-      icon: "trophy-0" as BadgeIconName,
+      icon: "heart" as BadgeIconName,
       description: "Completed 5 kindness missions",
       color: "bg-pink-400",
     },
@@ -40,9 +40,41 @@ const mockBadges = {
       id: "environment-1",
       name: "Earth Explorer",
       category: "environment",
-      icon: "trophy-1" as BadgeIconName,
+      icon: "woods" as BadgeIconName,
       description: "Completed 3 environment missions",
       color: "bg-green-400",
+    },
+    {
+      id: "learning-1",
+      name: "Knowledge Seeker",
+      category: "learning",
+      icon: "backpack" as BadgeIconName,
+      description: "Completed 5 learning missions",
+      color: "bg-blue-400",
+    },
+    {
+      id: "activity-1",
+      name: "Active Adventurer",
+      category: "activity",
+      icon: "walking" as BadgeIconName,
+      description: "Completed 3 outdoor activities",
+      color: "bg-yellow-400",
+    },
+    {
+      id: "social-1",
+      name: "Social Butterfly",
+      category: "social",
+      icon: "board-games" as BadgeIconName,
+      description: "Completed 5 social missions",
+      color: "bg-purple-400",
+    },
+    {
+      id: "creativity-1",
+      name: "Creative Genius",
+      category: "creativity",
+      icon: "cooking" as BadgeIconName,
+      description: "Completed 3 creative missions",
+      color: "bg-orange-400",
     },
   ],
   locked: [
@@ -50,17 +82,49 @@ const mockBadges = {
       id: "kindness-2",
       name: "Kindness Captain",
       category: "kindness",
-      icon: "trophy-2" as BadgeIconName,
+      icon: "crown" as BadgeIconName,
       description: "Complete 10 kindness missions",
       color: "bg-pink-400",
     },
     {
-      id: "justice-1",
-      name: "Justice Warrior",
-      category: "justice",
-      icon: "trophy-3" as BadgeIconName,
-      description: "Complete 5 justice missions",
+      id: "environment-2",
+      name: "Nature Guardian",
+      category: "environment",
+      icon: "park" as BadgeIconName,
+      description: "Complete 5 environment missions",
+      color: "bg-green-400",
+    },
+    {
+      id: "learning-2",
+      name: "Master Learner",
+      category: "learning",
+      icon: "diploma" as BadgeIconName,
+      description: "Complete 10 learning missions",
+      color: "bg-blue-400",
+    },
+    {
+      id: "activity-2",
+      name: "Outdoor Champion",
+      category: "activity",
+      icon: "basketball" as BadgeIconName,
+      description: "Complete 5 outdoor activities",
+      color: "bg-yellow-400",
+    },
+    {
+      id: "social-2",
+      name: "Community Leader",
+      category: "social",
+      icon: "thumbs-up" as BadgeIconName,
+      description: "Complete 10 social missions",
       color: "bg-purple-400",
+    },
+    {
+      id: "creativity-2",
+      name: "Artistic Master",
+      category: "creativity",
+      icon: "gift" as BadgeIconName,
+      description: "Complete 5 creative missions",
+      color: "bg-orange-400",
     },
   ],
 };
@@ -100,28 +164,22 @@ const Profile = () => {
   const [selectedDeed, setSelectedDeed] = useState<
     (typeof mockDeedHistory)[0] | null
   >(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-  // Mock completed missions
-  const completedMissions = [
-    {
-      icon: "help",
-      title: "Helped with Homework",
-      date: "2024-03-10",
-      theme: "friendship",
-    },
-    {
-      icon: "clean",
-      title: "Cleaned the Park",
-      date: "2024-03-09",
-      theme: "earth",
-    },
-    {
-      icon: "share",
-      title: "Shared Snacks",
-      date: "2024-03-08",
-      theme: "friendship",
-    },
-  ];
+  // Filter badges based on selected category
+  const filteredEarnedBadges =
+    selectedCategory === "all"
+      ? mockBadges.earned
+      : mockBadges.earned.filter(
+          (badge) => badge.category === selectedCategory
+        );
+
+  const filteredLockedBadges =
+    selectedCategory === "all"
+      ? mockBadges.locked
+      : mockBadges.locked.filter(
+          (badge) => badge.category === selectedCategory
+        );
 
   const handleNameSave = (newName: string) => {
     setName(newName);
@@ -282,80 +340,6 @@ const Profile = () => {
           </motion.div>
         </motion.div>
 
-        {/* Completed Missions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="space-y-4"
-        >
-          <h2 className="text-2xl font-bold text-purple-800">
-            Your Kind Deeds
-          </h2>
-          <div className="grid gap-4">
-            {completedMissions.map((mission, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 + index * 0.1 }}
-                className={`bg-white/80 backdrop-blur-sm rounded-xl p-4 border-2 border-white shadow-lg hover:shadow-xl transition-shadow
-                          ${
-                            mission.theme === "earth"
-                              ? "bg-green-50"
-                              : "bg-purple-50"
-                          }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`p-3 rounded-full ${
-                      mission.theme === "earth"
-                        ? "bg-green-100"
-                        : "bg-purple-100"
-                    }`}
-                  >
-                    <Icon
-                      name={mission.icon as MissionIconName}
-                      type="mission"
-                      size="lg"
-                      className={
-                        mission.theme === "earth"
-                          ? "text-green-600"
-                          : "text-purple-600"
-                      }
-                    />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-gray-800">
-                      {mission.title}
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      {new Date(mission.date).toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
-                  </div>
-                  <motion.div
-                    className="ml-auto"
-                    whileHover={{ scale: 1.1, rotate: 10 }}
-                  >
-                    <img
-                      src={
-                        mission.theme === "earth"
-                          ? "/src/assets/icons/emerald.svg"
-                          : "/src/assets/icons/ruby.svg"
-                      }
-                      alt="prize"
-                      className="w-8 h-8 animate-shine"
-                    />
-                  </motion.div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
         {/* Category Progress Trackers */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -419,18 +403,22 @@ const Profile = () => {
         >
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-purple-800">Your Badges</h2>
-            <select className="rounded-full border-gray-300 text-gray-700">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="rounded-full border-gray-300 text-gray-700 px-4 py-2 bg-gray-50"
+            >
               <option value="all">All Categories</option>
               <option value="kindness">Kindness</option>
               <option value="environment">Environment</option>
-              <option value="justice">Justice</option>
-              <option value="animalLove">Animal Love</option>
-              <option value="womenEmpowerment">Women Empowerment</option>
-              <option value="culturalAwareness">Cultural Awareness</option>
+              <option value="learning">Learning</option>
+              <option value="activity">Activity</option>
+              <option value="social">Social</option>
+              <option value="creativity">Creativity</option>
             </select>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {mockBadges.earned.map((badge) => (
+            {filteredEarnedBadges.map((badge) => (
               <motion.div
                 key={badge.id}
                 whileHover={{ scale: 1.05 }}
@@ -448,7 +436,7 @@ const Profile = () => {
                 <h3 className="font-bold text-white">{badge.name}</h3>
               </motion.div>
             ))}
-            {mockBadges.locked.map((badge) => (
+            {filteredLockedBadges.map((badge) => (
               <motion.div
                 key={badge.id}
                 className="bg-gray-200 rounded-2xl p-4 text-center relative"

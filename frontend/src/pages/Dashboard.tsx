@@ -20,19 +20,27 @@ const user = {
 const recentBadges = [
   {
     name: "Kindness Champion",
-    icon: "trophy-0" as BadgeIconName,
+    icon: "heart" as BadgeIconName,
     earned: true,
+    color: "bg-gradient-to-br from-pink-400 to-pink-600",
   },
   {
-    name: "Earth Protector",
-    icon: "trophy-1" as BadgeIconName,
+    name: "Nature Guardian",
+    icon: "woods" as BadgeIconName,
     earned: true,
+    color: "bg-gradient-to-br from-green-400 to-green-600",
   },
-  { name: "Justice Warrior", icon: "trophy-2" as BadgeIconName, earned: false },
   {
-    name: "Friendship Master",
-    icon: "trophy-3" as BadgeIconName,
+    name: "Knowledge Seeker",
+    icon: "backpack" as BadgeIconName,
+    earned: false,
+    color: "bg-gradient-to-br from-blue-400 to-blue-600",
+  },
+  {
+    name: "Social Butterfly",
+    icon: "board-games" as BadgeIconName,
     earned: true,
+    color: "bg-gradient-to-br from-purple-400 to-purple-600",
   },
 ];
 
@@ -213,16 +221,14 @@ const Dashboard = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
                 className={`flex-shrink-0 w-24 h-24 rounded-2xl p-4 ${
-                  badge.earned
-                    ? "bg-gradient-to-br from-yellow-400 to-orange-400"
-                    : "bg-gray-200"
-                }`}
+                  badge.color
+                } ${!badge.earned ? "opacity-50" : ""}`}
               >
                 <Icon
                   name={badge.icon}
                   type="badge"
                   size="xl"
-                  className={badge.earned ? "" : "opacity-50"}
+                  className="text-white"
                 />
               </motion.div>
             ))}
@@ -250,8 +256,8 @@ const Dashboard = () => {
           >
             <div className="flex items-center space-x-2 mb-2">
               <Icon
-                name="star"
-                type="ui"
+                name="gift"
+                type="prize"
                 size="lg"
                 className="text-yellow-400"
               />
