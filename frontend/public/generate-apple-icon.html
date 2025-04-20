@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Generate Apple Touch Icon</title>
+  </head>
+  <body>
+    <canvas id="canvas180" width="180" height="180"></canvas>
+    <script>
+      function generateAppleIcon(canvas) {
+        const ctx = canvas.getContext("2d");
+        const size = 180;
+
+        // Create gradient background
+        const gradient = ctx.createLinearGradient(0, 0, size, size);
+        gradient.addColorStop(0, "#4F46E5");
+        gradient.addColorStop(1, "#EC4899");
+
+        // Fill background
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, size, size);
+
+        // Add text
+        ctx.fillStyle = "white";
+        ctx.font = `bold ${size / 4}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("KQ", size / 2, size / 2);
+
+        // Download
+        const link = document.createElement("a");
+        link.download = "apple-touch-icon.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      }
+
+      generateAppleIcon(document.getElementById("canvas180"));
+    </script>
+  </body>
+</html>
