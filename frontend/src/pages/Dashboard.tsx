@@ -51,42 +51,52 @@ const funFacts = [
   "Every small act of kindness makes the world better!",
 ];
 
+const FloatingElements = () => {
+  const elements = Array.from({ length: 15 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    delay: Math.random() * 2,
+    duration: 2 + Math.random() * 2,
+    type: i % 2 === 0 ? "⭐" : "❤️",
+  }));
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      {elements.map((element) => (
+        <motion.div
+          key={element.id}
+          className="absolute text-2xl"
+          style={{
+            left: `${element.x}%`,
+            top: `${element.y}%`,
+          }}
+          animate={{
+            y: [0, -20, 0],
+            opacity: [0.3, 0.8, 0.3],
+            rotate: [0, 180, 360],
+          }}
+          transition={{
+            duration: element.duration,
+            repeat: Infinity,
+            delay: element.delay,
+            ease: "easeInOut",
+          }}
+        >
+          {element.type}
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const hasSpunToday = false; // This would come from state/API
   const currentFunFact = funFacts[0]; // This would rotate
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-100 via-pink-100 to-purple-100">
-      {/* Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {[...Array(5)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -20, 0],
-              rotate: [0, 360],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: Math.random() * 2,
-            }}
-          >
-            <Icon
-              name="diamond"
-              type="prize"
-              size="md"
-              className="text-yellow-400"
-            />
-          </motion.div>
-        ))}
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 py-8 px-4 relative overflow-hidden">
+      <FloatingElements />
 
       {/* Top Section: Welcome Bar */}
       <section className="pt-8 px-4">

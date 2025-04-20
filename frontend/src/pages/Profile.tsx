@@ -187,25 +187,26 @@ const Profile = () => {
     setIsEditingName(false);
   };
 
-  // Floating diamonds effect
-  const FloatingDiamonds = () => {
-    const diamonds = Array.from({ length: 5 }, (_, i) => ({
+  // Floating elements effect
+  const FloatingElements = () => {
+    const elements = Array.from({ length: 10 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
       delay: Math.random() * 2,
       duration: 2 + Math.random() * 2,
+      type: i % 2 === 0 ? "⭐" : "❤️",
     }));
 
     return (
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {diamonds.map((diamond) => (
+        {elements.map((element) => (
           <motion.div
-            key={diamond.id}
-            className="absolute w-8 h-8"
+            key={element.id}
+            className="absolute text-2xl"
             style={{
-              left: `${diamond.x}%`,
-              top: `${diamond.y}%`,
+              left: `${element.x}%`,
+              top: `${element.y}%`,
             }}
             animate={{
               y: [0, -20, 0],
@@ -213,17 +214,13 @@ const Profile = () => {
               rotate: [0, 180, 360],
             }}
             transition={{
-              duration: diamond.duration,
+              duration: element.duration,
               repeat: Infinity,
-              delay: diamond.delay,
+              delay: element.delay,
               ease: "easeInOut",
             }}
           >
-            <img
-              src="/src/assets/icons/diamond.svg"
-              alt="diamond"
-              className="w-full h-full"
-            />
+            {element.type}
           </motion.div>
         ))}
       </div>
@@ -232,7 +229,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 py-8 px-4 relative overflow-hidden">
-      <FloatingDiamonds />
+      <FloatingElements />
       <div className="max-w-4xl mx-auto space-y-8 relative">
         {/* Profile Header */}
         <motion.div
@@ -266,7 +263,11 @@ const Profile = () => {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Icon name="settings" type="ui" size="sm" />
+              <img
+                src="https://imgproxy.attic.sh/insecure/f:png/plain/https://attic.sh/yxiupo64zwmzaf3v92pq47tehl0v"
+                alt="settings"
+                className="w-6 h-6"
+              />
             </motion.button>
           </div>
 
@@ -499,11 +500,11 @@ const Profile = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowParentSettings(true)}
-          className="fixed bottom-4 right-4 bg-purple-600 text-white p-4 rounded-full shadow-lg"
+          className="fixed bottom-4 right-4 bg-purple-600 text-white p-4 rounded-full shadow-lg z-30"
         >
           <img
-            src="/src/assets/icons/lock.svg"
-            alt="parent"
+            src="https://imgproxy.attic.sh/insecure/f:png/plain/https://attic.sh/yxiupo64zwmzaf3v92pq47tehl0v"
+            alt="settings"
             className="w-6 h-6"
           />
         </motion.button>
@@ -515,12 +516,12 @@ const Profile = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
+              className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-40"
             >
               <motion.div
                 initial={{ scale: 0.5 }}
                 animate={{ scale: 1 }}
-                className="bg-white rounded-3xl p-8 max-w-md w-full"
+                className="bg-white rounded-3xl p-8 max-w-md w-full relative"
               >
                 <h2 className="text-2xl font-bold text-purple-800 mb-4">
                   Parent Settings
@@ -538,13 +539,7 @@ const Profile = () => {
                   <div className="p-4 bg-purple-50 rounded-xl">
                     <p className="text-purple-800">
                       Hi Parent! {mockUser.name}'s doing great. Her favorite
-                      category is{" "}
-                      <img
-                        src="/src/assets/icons/heart.svg"
-                        alt="kindness"
-                        className="w-4 h-4 inline-block"
-                      />{" "}
-                      Kindness!
+                      category is Kindness!
                     </p>
                   </div>
                   <button className="w-full bg-purple-600 text-white py-2 rounded-full hover:bg-purple-700">
@@ -553,10 +548,10 @@ const Profile = () => {
                 </div>
                 <button
                   onClick={() => setShowParentSettings(false)}
-                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-50"
                 >
                   <img
-                    src="/src/assets/icons/cross.svg"
+                    src="https://imgproxy.attic.sh/insecure/f:png/plain/https://imgproxy.attic.sh/wbDNYnar-BXWyB4JjxcfhMD9ucAGfGFUxcPdxYLsm2U/rs:fit:768:768:1:1/t:1:FF00FF:false:false/aHR0cHM6Ly9hdHRpYy5zaC84NXR3cWo4b2lqbDFpZ2hwbmtneXU0Y2lwdGpj"
                     alt="close"
                     className="w-6 h-6"
                   />

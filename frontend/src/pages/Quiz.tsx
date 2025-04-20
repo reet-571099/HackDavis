@@ -87,6 +87,45 @@ const Quiz = () => {
     setQuizCompleted(false);
   };
 
+  const FloatingElements = () => {
+    const elements = Array.from({ length: 15 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      delay: Math.random() * 2,
+      duration: 2 + Math.random() * 2,
+      type: i % 2 === 0 ? "⭐" : "❤️",
+    }));
+
+    return (
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {elements.map((element) => (
+          <motion.div
+            key={element.id}
+            className="absolute text-2xl"
+            style={{
+              left: `${element.x}%`,
+              top: `${element.y}%`,
+            }}
+            animate={{
+              y: [0, -20, 0],
+              opacity: [0.3, 0.8, 0.3],
+              rotate: [0, 180, 360],
+            }}
+            transition={{
+              duration: element.duration,
+              repeat: Infinity,
+              delay: element.delay,
+              ease: "easeInOut",
+            }}
+          >
+            {element.type}
+          </motion.div>
+        ))}
+      </div>
+    );
+  };
+
   if (quizCompleted) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -124,7 +163,8 @@ const Quiz = () => {
   }
 
   return (
-    <div className="min-h-screen p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 py-8 px-4 relative overflow-hidden">
+      <FloatingElements />
       <div className="max-w-2xl mx-auto">
         {/* Progress Bar */}
         <div className="mb-6">

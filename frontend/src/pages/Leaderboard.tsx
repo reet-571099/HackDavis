@@ -83,12 +83,52 @@ const mockPopularBadges = [
   },
 ];
 
+const FloatingElements = () => {
+  const elements = Array.from({ length: 15 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    delay: Math.random() * 2,
+    duration: 2 + Math.random() * 2,
+    type: i % 2 === 0 ? "⭐" : "❤️",
+  }));
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      {elements.map((element) => (
+        <motion.div
+          key={element.id}
+          className="absolute text-2xl"
+          style={{
+            left: `${element.x}%`,
+            top: `${element.y}%`,
+          }}
+          animate={{
+            y: [0, -20, 0],
+            opacity: [0.3, 0.8, 0.3],
+            rotate: [0, 180, 360],
+          }}
+          transition={{
+            duration: element.duration,
+            repeat: Infinity,
+            delay: element.delay,
+            ease: "easeInOut",
+          }}
+        >
+          {element.type}
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
 const Leaderboard = () => {
   const [filter, setFilter] = useState<"weekly" | "allTime">("weekly");
   const [showConfetti, setShowConfetti] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-100 via-pink-100 to-purple-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 py-8 px-4 relative overflow-hidden">
+      <FloatingElements />
       {/* Confetti */}
       <AnimatePresence>
         {showConfetti && (
