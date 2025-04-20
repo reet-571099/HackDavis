@@ -565,9 +565,17 @@ const Profile = () => {
                 </div>
                 <span className="text-2xl">
                   {deed?.approved ? (
-                    <Icon name="thumbs-up" type="badge" size="md" />
+                    <img
+                      src="https://imgproxy.attic.sh/insecure/f:png/plain/https://imgproxy.attic.sh/h-fkQ3UMKb3FRWhTrVKbY_8q3GU32RWa4SXAq3ryQ8A/rs:fit:768:768:1:1/t:1:FF00FF:false:false/aHR0cHM6Ly9hdHRp/Yy5zaC9qNzFhODRp/ODVpbnBkZ2V0MnV5/Z3lkNTQ4OG0w"
+                      alt="Approved"
+                      className="w-10 h-10"
+                    />
                   ) : (
-                    <Icon name="default" type="badge" size="md" />
+                    <img
+                      src="https://imgproxy.attic.sh/insecure/f:png/plain/https://imgproxy.attic.sh/3N3wYAhPAS1ga8zNUl1pOX9PhLrT7M4tcX095VQ_sfw/rs:fit:768:768:1:1/t:1:FF00FF:false:false/aHR0cHM6Ly9hdHRp/Yy5zaC9ydW5wb2Qv/ZGNmY2ZjOTQtM2Q2/ZC00YTExLTk5OTct/MDZhMGNiNTIzODg0/LnBuZw"
+                      alt="Not Approved"
+                      className="w-10 h-10"
+                    />
                   )}
                 </span>
               </motion.div>

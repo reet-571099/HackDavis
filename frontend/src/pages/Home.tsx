@@ -312,8 +312,8 @@ const Home = () => {
             <div className="text-center">
               <div className="mb-2">
                 <Icon
-                  name="star"
-                  type="ui"
+                  name="backpack"
+                  type="badge"
                   size="lg"
                   className="text-purple-600"
                 />
@@ -334,8 +334,8 @@ const Home = () => {
             <div className="text-center">
               <div className="mb-2">
                 <Icon
-                  name="heart"
-                  type="ui"
+                  name="gift"
+                  type="badge"
                   size="lg"
                   className="text-purple-600"
                 />
@@ -386,8 +386,8 @@ const Home = () => {
             <div className="text-center">
               <div className="mb-4">
                 <Icon
-                  name="settings"
-                  type="ui"
+                  name="diploma"
+                  type="badge"
                   size="lg"
                   className="text-purple-600"
                 />

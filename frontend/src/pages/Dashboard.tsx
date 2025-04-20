@@ -12,7 +12,7 @@ import {
 const user = {
   id: "1",
   name: "Super Hero",
-  avatar: "boy-0" as AvatarIconName,
+  avatar: "boy-1" as AvatarIconName,
   streak: 5,
   stars: 42,
 };
