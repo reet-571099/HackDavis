@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "../components/Icon";
 import SpinWheel from "../components/SpinWheel";
+import QuoteDisplay from "../components/QuoteDisplay";
 import { BadgeIconName, PrizeIconName } from "../types/icon";
 
 // Single source of truth for categories and deeds
@@ -11,8 +12,8 @@ const deedCategories = [
     id: "kindness",
     name: "Kindness",
     icon: "heart" as BadgeIconName,
-    color: "#EC4899", // Color for wheel
-    bgColor: "bg-pink-400", // Tailwind class for result card
+    color: "#EC4899",
+    bgColor: "bg-pink-400",
     title: "Be a Kindness Champion!",
     description: "Give someone a genuine compliment today",
     deedId: "kindness-1",
@@ -89,62 +90,80 @@ const deedCategories = [
   },
 ];
 
-// Mock data for quotes
-const quotes = [
-  "Every deed you do is a step to change the world!",
-  "Small acts of kindness create big waves of change!",
-  "You're making the world a better place, one deed at a time!",
-  "Your kindness is like a ripple that spreads far and wide!",
-];
-
 const Spin = () => {
   const navigate = useNavigate();
   const [hasSpunToday, setHasSpunToday] = useState(false);
   const [showResult, setShowResult] = useState(false);
-  const [currentQuote, setCurrentQuote] = useState(quotes[0]);
   const [spinResult, setSpinResult] = useState<
     (typeof deedCategories)[0] | null
   >(null);
 
-  // Rotate quotes every 5 seconds
+  // Check if user has already spun today
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentQuote((prev) => {
-        const currentIndex = quotes.indexOf(prev);
-        return quotes[(currentIndex + 1) % quotes.length];
-      });
-    }, 5000);
-    return () => clearInterval(interval);
+    // Reset localStorage for testing
+    // localStorage.removeItem("lastSpinDate"); // Uncomment to reset
+    const lastSpinDate = localStorage.getItem("lastSpinDate");
+    console.log("Last spin date:", lastSpinDate); // Debug log
+    if (lastSpinDate) {
+      const lastSpin = new Date(lastSpinDate);
+      const today = new Date();
+      if (
+        lastSpin.getDate() === today.getDate() &&
+        lastSpin.getMonth() === today.getMonth() &&
+        lastSpin.getFullYear() === today.getFullYear()
+      ) {
+        setHasSpunToday(true);
+      }
+    }
   }, []);
 
-  const handleSpinComplete = (categoryId: string) => {
+  const handleSpinComplete = useCallback((categoryId: string) => {
+    console.log("handleSpinComplete called with categoryId:", categoryId); // Debug log
     const selectedDeed = deedCategories.find((deed) => deed.id === categoryId);
     if (selectedDeed) {
       setSpinResult(selectedDeed);
       setShowResult(true);
       setHasSpunToday(true);
-      // Store in localStorage
+
       localStorage.setItem("lastSpinDate", new Date().toISOString());
 
-      // Scroll to result after a short delay to allow animation to start
-      setTimeout(() => {
-        const resultElement = document.getElementById("result-card");
-        if (resultElement) {
-          resultElement.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
-      }, 100);
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const resultElement = document.getElementById("result-card");
+          if (resultElement) {
+            resultElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+          }
+        }, 1500);
+      });
     }
-  };
+  }, []);
 
-  const handleAcceptDeed = (deedId: string) => {
-    navigate(`/deed/${deedId}`);
-  };
+  const handleAcceptDeed = useCallback(
+    (deedId: string) => {
+      navigate(`/deed/${deedId}`);
+    },
+    [navigate]
+  );
+
+  // Memoize the categories to prevent unnecessary rerenders
+  const wheelCategories = useMemo(
+    () =>
+      deedCategories.map((cat) => ({
+        id: cat.id,
+        name: cat.name,
+        color: cat.color,
+      })),
+    []
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 via-pink-100 to-purple-100 p-4">
       {/* Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {[...Array(10)].map((_, i) => (
+        {[...Array(5)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute"
@@ -153,11 +172,11 @@ const Spin = () => {
               top: `${Math.random() * 100}%`,
             }}
             animate={{
-              y: [0, -20, 0],
-              rotate: [0, 360],
+              y: [0, -10, 0],
+              opacity: [0.5, 1, 0.5],
             }}
             transition={{
-              duration: 3 + Math.random() * 2,
+              duration: 4 + Math.random() * 2,
               repeat: Infinity,
               ease: "easeInOut",
               delay: Math.random() * 2,
@@ -166,7 +185,7 @@ const Spin = () => {
             <Icon
               name="diamond"
               type="prize"
-              size="md"
+              size="sm"
               className="text-purple-400"
             />
           </motion.div>
@@ -198,14 +217,11 @@ const Spin = () => {
         </motion.h1>
 
         {/* Wheel Area */}
-        <div className="relative mb-8">
+        <div className="relative mb-8 ml-2">
           <SpinWheel
-            categories={deedCategories.map((cat) => ({
-              id: cat.id,
-              name: cat.name,
-              color: cat.color,
-            }))}
+            categories={wheelCategories}
             onSpinComplete={handleSpinComplete}
+            disabled={false} // Temporarily disabled for testing
           />
         </div>
 
@@ -249,15 +265,7 @@ const Spin = () => {
         </AnimatePresence>
 
         {/* Encouragement Quote */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl"
-        >
-          <p className="text-purple-800 text-xl text-center font-semibold">
-            {currentQuote}
-          </p>
-        </motion.div>
+        <QuoteDisplay />
       </div>
     </div>
   );
