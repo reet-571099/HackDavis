@@ -39,8 +39,16 @@ const Home = () => {
   const { loginWithRedirect, isAuthenticated } = useAuth0();
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    loginWithRedirect();
+  const handleLogin = async () => {
+    try {
+      await loginWithRedirect({
+        appState: {
+          returnTo: "/dashboard",
+        },
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+    }
   };
 
   const handleDashboard = () => {
