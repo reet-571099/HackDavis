@@ -158,12 +158,12 @@ Don't include any other text outside the JSON object.`;
   }
 
   // Analyze image with Gemini AI
-  async analyzeImage(imageBase64, category) {
+  async analyzeImage(imageBase64, { deed, category }) {
     try {
       console.log('Analyzing image with Gemini AI...');
 
-      // Create the prompt based on the category
-      const prompt = this.createPrompt(category);
+      // Create the prompt based on the deed and category
+      const prompt = this.createImagePrompt(deed, category);
 
       // Generate content with the image
       const result = await this.model.generateContent([
@@ -202,25 +202,19 @@ Don't include any other text outside the JSON object.`;
   }
 
   // Create a prompt for image analysis
-  createPrompt(category) {
-    return `Analyze this image and determine if it matches the category "${category}".
-    
-    Categories and their meanings:
-    - helping: Shows someone actively helping or assisting another person
-    - environment: Shows environmental conservation or cleanup activities
-    - kindness: Shows acts of kindness, compassion, or positive social interaction
-    - sharing: Shows sharing of resources, knowledge, or time
-    
+  createImagePrompt(deed, category) {
+    return `Analyze this image and determine if it matches the deed: "${deed}" in the category "${category}".
+
     Requirements:
-    1. The image MUST clearly show an act matching the specified category
-    2. The action must be the main focus of the image
-    3. The context must be appropriate for the category
+    1. The image MUST show the specific deed: "${deed}"
+    2. The action must be clearly visible in the image
+    3. The context must be appropriate for the category: "${category}"
     
     Return ONLY a JSON object in this exact format, with no additional text or formatting:
     {
       "matches": boolean,
       "confidence": number between 0 and 1,
-      "explanation": "detailed explanation"
+      "explanation": "detailed explanation of why it matches or doesn't match"
     }`;
   }
 
@@ -281,6 +275,59 @@ Don't include any other text outside the JSON object.`;
       "confidence": number between 0 and 1,
       "explanation": "detailed explanation of why it matches or doesn't match",
       "transcript": "the transcribed text of the audio"
+    }`;
+  }
+
+  // Analyze text with Gemini AI
+  async analyzeText(text, { deed, category }) {
+    try {
+      console.log('Analyzing text with Gemini AI...');
+      
+      const prompt = this.createTextPrompt(deed, category);
+      
+      const result = await this.model.generateContent([
+        prompt,
+        text
+      ]);
+
+      const response = await result.response;
+      const responseText = response.text();
+      
+      // Clean the response text by removing markdown formatting
+      const cleanText = responseText.replace(/```json\n?|\n?```/g, '').trim();
+      
+      try {
+        const analysis = JSON.parse(cleanText);
+        return {
+          matches: analysis.matches,
+          confidence: analysis.confidence,
+          explanation: analysis.explanation
+        };
+      } catch (parseError) {
+        console.error('Error parsing Gemini response:', parseError);
+        console.error('Raw response:', responseText);
+        throw new Error('Failed to parse Gemini AI response');
+      }
+    } catch (error) {
+      console.error('Gemini AI error:', error);
+      throw new Error(`Gemini AI error: ${error.message}`);
+    }
+  }
+
+  // Create a prompt for text analysis
+  createTextPrompt(deed, category) {
+    return `Analyze this text and determine if it matches the deed: "${deed}" in the category "${category}".
+
+    Requirements:
+    1. The text MUST describe the completion of the specific deed: "${deed}"
+    2. The description should be clear and specific about how the deed was completed
+    3. The context must be appropriate for the category: "${category}"
+    
+    Return ONLY a JSON object in this exact format, with no additional text or formatting:
+    {
+      "matches": boolean,
+      "confidence": number between 0 and 1,
+      "explanation": "detailed explanation of why it matches or doesn't match"
     }`;
   }
 }

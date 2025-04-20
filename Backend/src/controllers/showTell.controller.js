@@ -7,6 +7,34 @@ const geminiService = require('../services/gemini.service');
 const multer = require('multer');
 const path = require('path');
 
+// Helper function to generate child-friendly feedback messages
+function generateFeedbackMessage(explanation, deed) {
+  const lowerExplanation = explanation.toLowerCase();
+  
+  if (lowerExplanation.includes('not specific') || lowerExplanation.includes('vague')) {
+    return "Try to tell us exactly what you did! For example, instead of saying 'I helped', say 'I helped my friend pick up their toys'.";
+  }
+  
+  if (lowerExplanation.includes('different activity') || lowerExplanation.includes('not matching')) {
+    return `Remember, we're looking for: "${deed}". Try again with that specific activity!`;
+  }
+  
+  if (lowerExplanation.includes('not clear') || lowerExplanation.includes('unclear')) {
+    return "Speak a little louder and clearer next time so we can understand your awesome deed!";
+  }
+  
+  if (lowerExplanation.includes('incomplete') || lowerExplanation.includes('partial')) {
+    return "Tell us the whole story! What happened from start to finish?";
+  }
+  
+  if (lowerExplanation.includes('not related') || lowerExplanation.includes('unrelated')) {
+    return `Let's focus on "${deed}". You can do it!`;
+  }
+  
+  // Default message if none of the above match
+  return "Nice try! Let's try again with more details about what you did. You can do it!";
+}
+
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -64,7 +92,10 @@ const uploadPhoto = async (req, res) => {
     const base64Image = processedImage.toString('base64');
 
     // Analyze image with Gemini AI
-    const analysis = await geminiService.analyzeImage(base64Image, deed.category);
+    const analysis = await geminiService.analyzeImage(base64Image, {
+      deed: deed.deed,
+      category: deed.category
+    });
 
     // Create entry in Firestore
     const entryId = uuidv4();
@@ -81,6 +112,7 @@ const uploadPhoto = async (req, res) => {
       verificationDetails: {
         confidence: analysis.confidence,
         explanation: analysis.explanation,
+        deed: deed.deed,
         category: deed.category,
         requiredCategory: deed.category
       }
@@ -88,16 +120,51 @@ const uploadPhoto = async (req, res) => {
 
     await entryRef.set(entryData);
 
-    res.status(201).json({
-      message: analysis.matches ? 'Photo uploaded and verified successfully' : 'Photo uploaded but does not match the deed category',
-      entryId,
-      verification: {
-        matches: analysis.matches,
-        confidence: analysis.confidence,
-        explanation: analysis.explanation,
-        category: deed.category
-      }
-    });
+    // Update category counts based on verification
+    const categoryRef = db.collection('categoryStats').doc(deed.category);
+    const categoryDoc = await categoryRef.get();
+    
+    if (analysis.matches) {
+      // Increment true count
+      await categoryRef.set({
+        trueCount: (categoryDoc.exists ? (categoryDoc.data().trueCount || 0) : 0) + 1,
+        falseCount: categoryDoc.exists ? (categoryDoc.data().falseCount || 0) : 0
+      }, { merge: true });
+
+      res.status(201).json({
+        message: 'Great job! Your photo matches the deed perfectly!',
+        entryId,
+        verification: {
+          matches: true,
+          confidence: analysis.confidence,
+          explanation: analysis.explanation,
+          deed: deed.deed,
+          category: deed.category
+        }
+      });
+    } else {
+      // Increment false count
+      await categoryRef.set({
+        trueCount: categoryDoc.exists ? (categoryDoc.data().trueCount || 0) : 0,
+        falseCount: (categoryDoc.exists ? (categoryDoc.data().falseCount || 0) : 0) + 1
+      }, { merge: true });
+
+      // Generate a child-friendly feedback message based on the explanation
+      const feedbackMessage = generateFeedbackMessage(analysis.explanation, deed.deed);
+
+      res.status(201).json({
+        message: feedbackMessage,
+        entryId,
+        verification: {
+          matches: false,
+          confidence: analysis.confidence,
+          explanation: analysis.explanation,
+          deed: deed.deed,
+          category: deed.category,
+          suggestion: 'Try to take a photo that clearly shows you doing the deed. Make sure the main action is visible!'
+        }
+      });
+    }
   } catch (error) {
     console.error('Error uploading photo:', error);
     res.status(500).json({ error: 'Failed to upload photo' });
@@ -144,23 +211,88 @@ const saveJournalEntry = async (req, res) => {
       return res.status(400).json({ error: 'Deed ID, content, and type are required' });
     }
 
+    // Get deed details from Firestore
+    const deedDoc = await db.collection('deeds').doc(deedId).get();
+    if (!deedDoc.exists) {
+      return res.status(404).json({ error: 'Deed not found' });
+    }
+
+    const deed = deedDoc.data();
+
+    // Analyze journal entry with Gemini AI
+    const analysis = await geminiService.analyzeText(content, {
+      deed: deed.deed,
+      category: deed.category
+    });
+
     const entryId = uuidv4();
     const entryRef = db.collection('showTell').doc(entryId);
     
-    await entryRef.set({
+    const entryData = {
       id: entryId,
       deedId,
       type: 'journal',
       content,
       journalType: type,
       createdAt: new Date(),
-      approved: false
-    });
+      approved: false,
+      verifiedByAI: analysis.matches,
+      verificationDetails: {
+        confidence: analysis.confidence,
+        explanation: analysis.explanation,
+        deed: deed.deed,
+        category: deed.category,
+        requiredCategory: deed.category
+      }
+    };
 
-    res.status(201).json({
-      message: 'Journal entry saved successfully',
-      entryId
-    });
+    await entryRef.set(entryData);
+
+    // Update category counts based on verification
+    const categoryRef = db.collection('categoryStats').doc(deed.category);
+    const categoryDoc = await categoryRef.get();
+    
+    if (analysis.matches) {
+      // Increment true count
+      await categoryRef.set({
+        trueCount: (categoryDoc.exists ? (categoryDoc.data().trueCount || 0) : 0) + 1,
+        falseCount: categoryDoc.exists ? (categoryDoc.data().falseCount || 0) : 0
+      }, { merge: true });
+
+      res.status(201).json({
+        message: 'Great job! Your journal entry matches the deed perfectly!',
+        entryId,
+        verification: {
+          matches: true,
+          confidence: analysis.confidence,
+          explanation: analysis.explanation,
+          deed: deed.deed,
+          category: deed.category
+        }
+      });
+    } else {
+      // Increment false count
+      await categoryRef.set({
+        trueCount: categoryDoc.exists ? (categoryDoc.data().trueCount || 0) : 0,
+        falseCount: (categoryDoc.exists ? (categoryDoc.data().falseCount || 0) : 0) + 1
+      }, { merge: true });
+
+      // Generate a child-friendly feedback message based on the explanation
+      const feedbackMessage = generateFeedbackMessage(analysis.explanation, deed.deed);
+
+      res.status(201).json({
+        message: feedbackMessage,
+        entryId,
+        verification: {
+          matches: false,
+          confidence: analysis.confidence,
+          explanation: analysis.explanation,
+          deed: deed.deed,
+          category: deed.category,
+          suggestion: 'Try to be more specific about how you completed the deed. For example, if the deed is about helping someone, describe exactly how you helped them.'
+        }
+      });
+    }
   } catch (error) {
     console.error('Error saving journal entry:', error);
     res.status(500).json({ error: 'Failed to save journal entry' });
@@ -269,16 +401,24 @@ const createTestDeeds = async (req, res) => {
 // Add this new test function
 const testImageVerification = async (req, res) => {
   try {
-    const { category } = req.body;
+    const { deedId } = req.body;
     const file = req.file;
 
     if (!file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    if (!category) {
-      return res.status(400).json({ error: 'Category is required' });
+    if (!deedId) {
+      return res.status(400).json({ error: 'Deed ID is required' });
     }
+
+    // Get deed details from Firestore
+    const deedDoc = await db.collection('deeds').doc(deedId).get();
+    if (!deedDoc.exists) {
+      return res.status(404).json({ error: 'Deed not found' });
+    }
+
+    const deed = deedDoc.data();
 
     // Process image with sharp
     const processedImage = await sharp(file.buffer)
@@ -292,24 +432,55 @@ const testImageVerification = async (req, res) => {
     // Convert to base64
     const base64Image = processedImage.toString('base64');
 
-    console.log('Testing image verification...', {
-      category,
-      imageSize: base64Image.length
-    });
-
     // Analyze image with Gemini AI
-    const analysis = await geminiService.analyzeImage(base64Image, category);
-
-    res.json({
-      success: true,
-      message: 'Image verification test successful',
-      verification: {
-        matches: analysis.matches,
-        confidence: analysis.confidence,
-        explanation: analysis.explanation,
-        category
-      }
+    const analysis = await geminiService.analyzeImage(base64Image, {
+      deed: deed.deed,
+      category: deed.category
     });
+
+    // Update category counts based on verification
+    const categoryRef = db.collection('categoryStats').doc(deed.category);
+    const categoryDoc = await categoryRef.get();
+    
+    if (analysis.matches) {
+      // Increment true count
+      await categoryRef.set({
+        trueCount: (categoryDoc.exists ? (categoryDoc.data().trueCount || 0) : 0) + 1,
+        falseCount: categoryDoc.exists ? (categoryDoc.data().falseCount || 0) : 0
+      }, { merge: true });
+
+      res.status(201).json({
+        message: 'Great job! Your photo matches the deed perfectly!',
+        verification: {
+          matches: true,
+          confidence: analysis.confidence,
+          explanation: analysis.explanation,
+          deed: deed.deed,
+          category: deed.category
+        }
+      });
+    } else {
+      // Increment false count
+      await categoryRef.set({
+        trueCount: categoryDoc.exists ? (categoryDoc.data().trueCount || 0) : 0,
+        falseCount: (categoryDoc.exists ? (categoryDoc.data().falseCount || 0) : 0) + 1
+      }, { merge: true });
+
+      // Generate a child-friendly feedback message based on the explanation
+      const feedbackMessage = generateFeedbackMessage(analysis.explanation, deed.deed);
+
+      res.status(201).json({
+        message: feedbackMessage,
+        verification: {
+          matches: false,
+          confidence: analysis.confidence,
+          explanation: analysis.explanation,
+          deed: deed.deed,
+          category: deed.category,
+          suggestion: 'Try to take a photo that clearly shows you doing the deed. Make sure the main action is visible!'
+        }
+      });
+    }
   } catch (error) {
     console.error('Error testing image verification:', error);
     res.status(500).json({
