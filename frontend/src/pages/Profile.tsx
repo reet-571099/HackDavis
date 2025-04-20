@@ -210,27 +210,18 @@ const Profile = () => {
     setWeeklyReportEnabled(enabled);
     if (enabled) {
       try {
-        const token = await getAccessTokenSilently();
-        console.log("Auth0 Token:", token);
-
-        const emailData = {
-          to: parentEmail || user?.email || "parent@example.com",
-        };
-
-        const response = await fetch("http://localhost:4000/api/send-email", {
+        const response = await fetch("http://localhost:4000/api/email/test", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(emailData),
+          body: JSON.stringify({
+            email: parentEmail || user?.email || "parent@example.com",
+          }),
         });
 
         if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(
-            `Failed to send email: ${response.status} ${errorText}`
-          );
+          throw new Error("Failed to send email");
         }
 
         console.log("Email sent successfully");
